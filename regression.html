@@ -1,0 +1,171 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 9: Regression &amp; Dose-Response — QDA</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li><li><a href="western-blot.html">WB</a></li><li><a href="elisa.html">ELISA</a></li><li><a href="flow-cytometry.html">Flow</a></li><li><a href="image-quant.html">Image</a></li><li><a href="eda.html">EDA</a></li><li><a href="hypothesis-testing.html">Tests</a></li><li><a href="multiple-testing.html">MTC</a></li><li><a href="regression.html" class="active">Regr.</a></li><li><a href="effect-size.html">ES/Power</a></li><li><a href="omics-quant.html">Omics</a></li><li><a href="visualization.html">Viz</a></li><li><a href="reproducibility.html">Repro.</a></li><li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 9 / 14</div>
+<h1 data-zh="回歸、相關與劑量反應" data-en="Regression, Correlation, Dose-Response">回歸、相關與劑量反應</h1>
+<p class="subtitle" data-lang="zh">線性、非線性、IC50、Hill 與 Michaelis-Menten——讓函數真的描述生物現象。</p>
+<p class="subtitle" data-lang="en">Linear, nonlinear, IC50, Hill, and Michaelis-Menten — making functions actually describe biology.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="一個 r=0.9 的散點圖為什麼可能毫無意義？" data-en="Why r=0.9 can still be meaningless">為什麼相關係數會騙人？</h2>
+<div data-lang="zh"><p>Pearson r 衡量「線性」關聯，對非線性關係毫無感應（即使是完美 sin 曲線 r 可能 ~0）。Spearman 用排名，對單調非線性穩健。劑量反應曲線本質是 sigmoidal，硬套線性回歸是論文 reviewer 最常質疑的問題之一。</p>
+<p>Ritz et al. 2015 (<em>PLOS ONE</em>) 的 R 套件 <strong>drc</strong> 是劑量反應分析的標準工具，2025 年 <strong>dr4pl</strong>、<strong>drda</strong> 在 robust 估計上更進一步。Sebaugh 2011 提醒：可靠的 IC50/EC50 估計必須包含上下平台區。</p></div>
+<div data-lang="en"><p>Pearson r measures <strong>linear</strong> association — completely blind to non-linear ones (a perfect sine wave gives r≈0). Spearman uses ranks, robust to monotonic non-linearity. Dose-response curves are inherently sigmoidal; forcing a linear fit is among reviewers' top complaints.</p>
+<p>The R package <strong>drc</strong> (Ritz et al. 2015, <em>PLOS ONE</em>) is the dose-response standard; in 2025 <strong>dr4pl</strong> and <strong>drda</strong> advance robust estimation. Sebaugh 2011 reminds us: trustworthy IC50/EC50 estimates require the standard to cover both plateaus.</p></div>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div><span data-lang="zh"><strong>三大線性回歸假設：</strong>(1) 線性 (Linearity)、(2) 殘差獨立、(3) 殘差常態+等變異 (homoscedasticity)。違反須改 GLM、weighted least squares、或 robust regression。</span><span data-lang="en"><strong>Three linear regression assumptions:</strong> (1) Linearity, (2) Independent residuals, (3) Normal & homoscedastic residuals. Violations → GLM, weighted least squares, or robust regression.</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心概念" data-en="CORE CONCEPTS">核心概念</div>
+<h2 data-zh="一、相關 vs 回歸" data-en="I. Correlation vs regression">一、相關 vs 回歸</h2>
+<div class="card-grid cols-2">
+<div class="card"><div class="card-icon">📊</div><h4>Pearson r</h4><div data-lang="zh"><p>線性、有方向 (−1~+1)、對 outlier 敏感。要求雙變量近似常態。</p></div><div data-lang="en"><p>Linear, directional (−1 to +1), outlier-sensitive. Requires both variables ~normal.</p></div></div>
+<div class="card"><div class="card-icon">📈</div><h4>Spearman ρ</h4><div data-lang="zh"><p>排名相關。對單調非線性、outlier 穩健。報告時須註明是 ρ 不是 r。</p></div><div data-lang="en"><p>Rank correlation. Robust to monotonic non-linearity and outliers. Label as ρ, not r.</p></div></div>
+<div class="card"><div class="card-icon">📐</div><h4>Linear regression</h4><div data-lang="zh"><p>給出方程式與斜率（含 CI 與 p）。可預測，但有方向假設。</p></div><div data-lang="en"><p>Provides equation, slope (with CI &amp; p), and prediction. Has directional assumption.</p></div></div>
+<div class="card"><div class="card-icon">📉</div><h4>Nonlinear regression</h4><div data-lang="zh"><p>4-PL、Hill、Michaelis-Menten、雙指數衰減等。需給合理初始值，否則收斂困難。</p></div><div data-lang="en"><p>4-PL, Hill, Michaelis-Menten, biexponential decay, etc. Needs sensible initial values to converge.</p></div></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="Hill / 4-PL 曲線參數" data-en="Hill / 4-PL parameters">劑量反應曲線參數</h2>
+<div data-lang="zh"><p>調整 Hill slope 與 IC50，觀察曲線形狀變化。實務上 Hill ≈ 1 表示 1:1 binding；Hill &gt; 1 表示協同 (cooperativity)。</p></div>
+<div data-lang="en"><p>Tune Hill slope and IC50 to see curve shape. Hill ≈ 1 indicates 1:1 binding; Hill &gt; 1 indicates cooperativity.</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span>IC50 (μM)</span><span id="valIC50">1.0</span></label><input type="range" id="sliderIC50" min="0.01" max="100" value="1" step="0.01"></div>
+<div class="slider-group"><label><span>Hill slope (n)</span><span id="valHill">1.0</span></label><input type="range" id="sliderHill" min="0.3" max="4" value="1" step="0.1"></div>
+<div class="sim-stats"><span class="sim-stat pass" id="statShape">—</span></div>
+<div class="chart-container"><canvas id="regChart"></canvas></div>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center;" data-zh="X：log10(concentration μM) | Y：% inhibition" data-en="X: log10(conc μM) | Y: % inhibition">X：log10(μM) | Y：% inhibition</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="二、線性、Hill、Michaelis-Menten 擬合" data-en="II. Linear, Hill, Michaelis-Menten fitting">二、各種回歸的 R/Python 程式碼</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" data-tab="r9">R</button><button class="code-tab-btn" data-tab="py9">Python</button></div>
+<div class="code-tab-content active" id="r9"><pre><span class="comment"># 1. 線性回歸 + 假設診斷</span>
+fit &lt;- <span class="func">lm</span>(y ~ x, data=df)
+<span class="func">summary</span>(fit)
+<span class="kw">library</span>(performance); <span class="func">check_model</span>(fit)     <span class="comment"># Q-Q、殘差、共線性、影響點</span>
+
+<span class="comment"># 2. 相關</span>
+<span class="func">cor.test</span>(df$x, df$y, method=<span class="str">"pearson"</span>)
+<span class="func">cor.test</span>(df$x, df$y, method=<span class="str">"spearman"</span>)
+
+<span class="comment"># 3. 劑量反應 (4-PL) — drc</span>
+<span class="kw">library</span>(drc)
+fit &lt;- <span class="func">drm</span>(response ~ dose, data=df, fct=<span class="func">LL.4</span>())
+<span class="func">summary</span>(fit)
+<span class="func">ED</span>(fit, c(<span class="num">50</span>), interval=<span class="str">"delta"</span>)        <span class="comment"># IC50 with 95% CI</span>
+
+<span class="comment"># 4. Michaelis-Menten — nls</span>
+mm &lt;- <span class="func">nls</span>(v ~ Vmax*S/(Km+S), data=enz, start=<span class="func">list</span>(Vmax=<span class="num">2</span>, Km=<span class="num">0.5</span>))
+<span class="func">summary</span>(mm)
+</pre></div>
+<div class="code-tab-content" id="py9"><pre><span class="kw">import</span> numpy <span class="kw">as</span> np, pandas <span class="kw">as</span> pd
+<span class="kw">from</span> scipy <span class="kw">import</span> stats
+<span class="kw">from</span> scipy.optimize <span class="kw">import</span> curve_fit
+<span class="kw">import</span> statsmodels.api <span class="kw">as</span> sm
+
+<span class="comment"># 1. 線性回歸 + 假設診斷</span>
+X = sm.<span class="func">add_constant</span>(df.x)
+fit = sm.<span class="func">OLS</span>(df.y, X).<span class="func">fit</span>()
+print(fit.<span class="func">summary</span>())                          <span class="comment"># Q-Q via fit.resid + statsmodels.graphics.gofplots.qqplot</span>
+
+<span class="comment"># 2. 相關</span>
+stats.<span class="func">pearsonr</span>(df.x, df.y)
+stats.<span class="func">spearmanr</span>(df.x, df.y)
+
+<span class="comment"># 3. 4-PL 劑量反應</span>
+<span class="kw">def</span> <span class="func">hill</span>(x, IC50, n, top, bot):
+    <span class="kw">return</span> bot + (top - bot) / (<span class="num">1</span> + (x/IC50)**n)
+popt, pcov = <span class="func">curve_fit</span>(hill, df.dose, df.response, p0=[<span class="num">1</span>,<span class="num">1</span>,<span class="num">100</span>,<span class="num">0</span>])
+print(<span class="str">"IC50 ="</span>, popt[<span class="num">0</span>], <span class="str">"Hill n ="</span>, popt[<span class="num">1</span>])
+
+<span class="comment"># 4. Michaelis-Menten</span>
+<span class="kw">def</span> <span class="func">mm</span>(S, Vmax, Km): <span class="kw">return</span> Vmax*S/(Km+S)
+popt, _ = <span class="func">curve_fit</span>(mm, enz.S, enz.v, p0=[<span class="num">2</span>, <span class="num">0.5</span>])
+</pre></div>
+</div>
+<div class="callout danger"><span class="callout-icon">🚨</span><div><span data-lang="zh"><strong>禁忌：</strong>用 Lineweaver-Burk 雙倒數圖估 Vmax/Km。線性化把誤差結構嚴重扭曲；現代教科書 (Cornish-Bowden, <em>Fundamentals of Enzyme Kinetics</em>) 全部反對。直接用 nls / curve_fit 非線性擬合。</span><span data-lang="en"><strong>Forbidden:</strong> Using Lineweaver-Burk double-reciprocal plots to estimate Vmax/Km. Linearization distorts errors severely; modern textbooks (Cornish-Bowden) universally reject it. Use nls / curve_fit instead.</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="常見陷阱" data-en="COMMON PITFALLS">常見陷阱</div>
+<h2 data-zh="三、回歸常見錯誤" data-en="III. Regression mistakes">三、reviewer 必查清單</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>❌ <span data-zh="把 r² 當作 fit 好壞" data-en="r² as the only fit metric">r² 當作唯一指標</span></h4><div data-lang="zh"><p>非線性 fit 用 r² 沒意義（也不在 0-1 之間）。看 AIC / BIC + residual plot。</p></div><div data-lang="en"><p>r² is meaningless for non-linear fits (not bounded 0-1). Use AIC/BIC + residual plot.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="IC50 外推" data-en="Extrapolating IC50">IC50 外推</span></h4><div data-lang="zh"><p>曲線未涵蓋 top/bottom 平台 → IC50 不可信。需設計濃度橫跨 IC50 上下各 1-2 個 log。</p></div><div data-lang="en"><p>Without top &amp; bottom plateaus the IC50 is unreliable. Design doses spanning ~2 logs above and below the expected IC50.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="忽略殘差診斷" data-en="No residual diagnostics">忽略殘差診斷</span></h4><div data-lang="zh"><p>檢查 residual vs fitted（線性？同質？）、Q-Q（常態？）、leverage（影響點？）。違反任一需處理。</p></div><div data-lang="en"><p>Check residual-vs-fitted (linearity/homoscedasticity), Q-Q (normality), leverage (influential points).</p></div></div>
+<div class="card"><h4>❌ <span data-zh="把相關當因果" data-en="Mistaking correlation for causation">相關當因果</span></h4><div data-lang="zh"><p>相關只反映共變，因果需介入實驗或工具變量。報告時避免「導致」「造成」這類因果語言。</p></div><div data-lang="en"><p>Correlation is co-variation, not causation. Avoid causal language ("causes," "leads to") without an intervention or instrumental variable.</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗" data-en="🎯 Quick Quiz">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="資料含 outlier、非線性單調關係，相關係數應選？" data-en="Outlier + monotonic non-linear: which correlation?">非線性單調 + outlier 用？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Pearson r</div>
+<div class="quiz-opt" data-correct="true">Spearman ρ</div>
+<div class="quiz-opt" data-correct="false">Cosine similarity</div>
+<div class="quiz-opt" data-correct="false">R² of linear regression</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>2. <span data-zh="估計 Vmax/Km 的現代正確做法是？" data-en="Modern correct way to estimate Vmax/Km?">估 Vmax/Km 正確做法？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="Lineweaver-Burk 雙倒數圖" data-en="Lineweaver-Burk double-reciprocal">Lineweaver-Burk</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="非線性 nls / curve_fit 擬合 v = Vmax·S/(Km+S)" data-en="Nonlinear nls / curve_fit on v = Vmax·S/(Km+S)">nls 非線性擬合</span></div>
+<div class="quiz-opt" data-correct="false">Eadie-Hofstee plot</div>
+<div class="quiz-opt" data-correct="false"><span data-zh="目測" data-en="Visual estimate">目測</span></div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>3. <span data-zh="Hill slope = 2 代表？" data-en="Hill slope = 2 means?">Hill slope = 2 代表？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="兩個 binding site 獨立" data-en="Two independent sites">兩個獨立 site</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="正向協同 (positive cooperativity)" data-en="Positive cooperativity">正向協同</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="負向協同" data-en="Negative cooperativity">負向協同</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="IC50 = 2" data-en="IC50 = 2">IC50 = 2</span></div>
+</div><div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="multiple-testing.html"><span class="nav-dir">← 上一章</span><span class="nav-title" data-zh="Step 8 · 多重比較與校正" data-en="Step 8 · Multiple Testing Correction">Step 8 · 多重比較與校正</span></a>
+<a href="effect-size.html"><span class="nav-dir">下一章 →</span><span class="nav-title" data-zh="Step 10 · 效應量與樣本數計算" data-en="Step 10 · Effect Size &amp;amp; Sample Size">Step 10 · 效應量與樣本數計算</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — QDA Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'});
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！':'✗ 再想想';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+
+const ctx=document.getElementById('regChart');
+const xs=[];for(let i=-3;i<=3;i+=0.05)xs.push(i);
+const chart=new Chart(ctx,{type:'line',data:{labels:xs.map(x=>x.toFixed(1)),datasets:[{label:'Dose-response',data:[],borderColor:'#3730a3',backgroundColor:'rgba(55,48,163,.15)',fill:true,tension:.3,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{title:{display:true,text:'log10(concentration μM)'}},y:{title:{display:true,text:'% inhibition'},min:0,max:100}}}});
+function sim(){
+  const IC=+document.getElementById('sliderIC50').value;
+  const n=+document.getElementById('sliderHill').value;
+  document.getElementById('valIC50').textContent=IC.toFixed(2);
+  document.getElementById('valHill').textContent=n.toFixed(1);
+  const data=xs.map(lx=>{const x=Math.pow(10,lx);return 100/(1+Math.pow(IC/x,n));});
+  chart.data.datasets[0].data=data;chart.update();
+  const shape = n<0.7? 'shallow (低協同)' : n>1.5 ? 'steep (高協同/positive cooperativity)' : 'classic (~1:1 binding)';
+  document.getElementById('statShape').textContent='Curve shape: '+shape;
+}
+['sliderIC50','sliderHill'].forEach(id=>document.getElementById(id).oninput=sim);sim();
+</script>
+</body></html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 6: Exploratory Data Analysis — QDA</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li><li><a href="western-blot.html">WB</a></li><li><a href="elisa.html">ELISA</a></li><li><a href="flow-cytometry.html">Flow</a></li><li><a href="image-quant.html">Image</a></li><li><a href="eda.html" class="active">EDA</a></li><li><a href="hypothesis-testing.html">Tests</a></li><li><a href="multiple-testing.html">MTC</a></li><li><a href="regression.html">Regr.</a></li><li><a href="effect-size.html">ES/Power</a></li><li><a href="omics-quant.html">Omics</a></li><li><a href="visualization.html">Viz</a></li><li><a href="reproducibility.html">Repro.</a></li><li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 6 / 14</div>
+<h1 data-zh="探索性資料分析 (EDA)" data-en="Exploratory Data Analysis (EDA)">探索性資料分析</h1>
+<p class="subtitle" data-lang="zh">先看圖、再做檢定——描述統計、常態性、離群值，與不該過度仰賴 p 值的 EDA 哲學。</p>
+<p class="subtitle" data-lang="en">Plot first, test later — descriptive statistics, normality, outliers, and the EDA philosophy of not over-trusting p-values.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="為什麼 EDA 是任何統計分析的第一步？" data-en="Why EDA is step zero of any statistical analysis">為什麼 EDA 是任何統計分析的第一步？</h2>
+<div data-lang="zh"><p>John Tukey 在 1977 年的 <em>Exploratory Data Analysis</em> 提出「看圖優於檢定」的哲學：histogram、Q-Q plot、boxplot 可以一眼看出資料分佈、變異與異常，這些是 p 值無法傳達的資訊。Anscombe's quartet 就是經典例證——四組資料的均值、變異、相關係數、回歸線完全相同，但散點圖形態截然不同。</p>
+<p>2025 年 Knief & Forstmeier (<em>R. Soc. Open Sci.</em>) 提醒：常態性檢定不該作為「自動」決策依據。樣本量 &gt; 300 時 Shapiro-Wilk 對任何微小偏離都會 p&lt;0.05，但此時 CLT 已使 t-test/ANOVA 高度穩健。</p></div>
+<div data-lang="en"><p>John Tukey's 1977 <em>Exploratory Data Analysis</em> championed "plot before test": histograms, Q-Q plots, boxplots reveal distribution, variation, and anomalies that p-values can never convey. Anscombe's quartet is the classic: four datasets with identical mean, variance, correlation, and regression line — but completely different scatter patterns.</p>
+<p>Knief & Forstmeier 2025 (<em>R. Soc. Open Sci.</em>) caution: normality tests should NOT be automated gatekeepers. At n &gt; 300, Shapiro-Wilk flags trivial deviations as p &lt; 0.05, but the CLT already makes t-tests / ANOVA highly robust there.</p></div>
+<div class="callout tip"><span class="callout-icon">💡</span><div><span data-lang="zh"><strong>EDA 三問：</strong>(1) 分布長相？(2) 有沒有 outlier？是否可疑？(3) 變數之間關聯如何？這三問都應用「圖」回答，不是用 p 值。</span><span data-lang="en"><strong>Three EDA questions:</strong> (1) What does the distribution look like? (2) Are there outliers — and are they suspicious? (3) How do variables relate? Answer with plots, not p-values.</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心概念" data-en="CORE CONCEPTS">核心概念</div>
+<h2 data-zh="一、描述統計與分布診斷" data-en="I. Descriptive stats &amp; distribution diagnostics">一、描述統計與分布診斷</h2>
+<div class="card-grid cols-2">
+<div class="card"><div class="card-icon">📈</div><h4><span data-zh="集中趨勢" data-en="Central tendency">集中趨勢</span></h4><div data-lang="zh"><p>Mean（敏感於 outlier）、Median（穩健）、Mode。偏態資料優先 median。</p></div><div data-lang="en"><p>Mean (outlier-sensitive), Median (robust), Mode. Skewed data → prefer median.</p></div></div>
+<div class="card"><div class="card-icon">📊</div><h4><span data-zh="變異" data-en="Spread">變異</span></h4><div data-lang="zh"><p>SD（敏感）、IQR（穩健）、MAD（中位數絕對偏差，最穩健）。Leys 2013 建議離群值用 MAD ± 3 標準化。</p></div><div data-lang="en"><p>SD (sensitive), IQR (robust), MAD (median absolute deviation, most robust). Leys 2013 recommends standardizing outliers via MAD ± 3.</p></div></div>
+<div class="card"><div class="card-icon">📐</div><h4><span data-zh="常態性檢定" data-en="Normality tests">常態性檢定</span></h4><div data-lang="zh"><p>Shapiro-Wilk 最強 (Razali 2011)；KS 已過時，改用 Lilliefors；Anderson-Darling 對尾部敏感。<strong>Q-Q plot 永遠比檢定值有資訊量</strong>。</p></div><div data-lang="en"><p>Shapiro-Wilk most powerful (Razali 2011); plain KS outdated → Lilliefors; Anderson-Darling sensitive to tails. <strong>A Q-Q plot is always more informative than a test value.</strong></p></div></div>
+<div class="card"><div class="card-icon">🔍</div><h4><span data-zh="離群值偵測" data-en="Outlier detection">離群值偵測</span></h4><div data-lang="zh"><p>Tukey fence: Q1−1.5·IQR ~ Q3+1.5·IQR；MAD ± 3；Grubbs test (僅單一 outlier)。<strong>偵測 ≠ 刪除</strong>，需先檢查是否技術錯誤。</p></div><div data-lang="en"><p>Tukey fence: Q1−1.5·IQR ~ Q3+1.5·IQR; MAD ± 3; Grubbs test (single outlier only). <strong>Detection ≠ removal</strong> — check for technical errors first.</p></div></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="樣本量對常態性檢定的影響" data-en="Effect of sample size on normality testing">樣本量如何欺騙常態性檢定</h2>
+<div data-lang="zh"><p>調整樣本量與偏度，觀察 Shapiro-Wilk 的 p 值如何變動。<strong>關鍵發現：</strong>樣本量大時，連微小偏離都會「顯著」，反而誤導你改用無母數檢定。</p></div>
+<div data-lang="en"><p>Adjust sample size and skewness, watch Shapiro-Wilk p change. <strong>Key:</strong> at large n, trivial deviations become "significant," misleading you into switching to non-parametric tests unnecessarily.</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span data-zh="樣本量 n" data-en="Sample size n">樣本量 n</span><span id="valN">50</span></label><input type="range" id="sliderN" min="10" max="1000" value="50" step="10"></div>
+<div class="slider-group"><label><span data-zh="偏度 (0=常態, 高=右偏)" data-en="Skewness (0=normal, high=right)">偏度</span><span id="valSk">0.5</span></label><input type="range" id="sliderSk" min="0" max="3" value="0.5" step="0.1"></div>
+<div class="sim-stats"><span class="sim-stat pass" id="statP">—</span><span class="sim-stat fail" id="statAdv">—</span></div>
+<div class="chart-container"><canvas id="edaChart"></canvas></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="二、EDA 標準流程" data-en="II. Standard EDA workflow">二、EDA 標準流程</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" data-tab="r6">R</button><button class="code-tab-btn" data-tab="py6">Python</button></div>
+<div class="code-tab-content active" id="r6"><pre><span class="kw">library</span>(tidyverse); <span class="kw">library</span>(skimr); <span class="kw">library</span>(performance)
+df &lt;- <span class="func">read_csv</span>(<span class="str">"data.csv"</span>)
+
+<span class="comment"># 1. 一覽：分布、缺失、unique count</span>
+<span class="func">skim</span>(df)
+
+<span class="comment"># 2. 視覺化：histogram + density + boxplot</span>
+<span class="func">ggplot</span>(df, <span class="func">aes</span>(value, fill=group)) +
+  <span class="func">geom_histogram</span>(aes(y=after_stat(density)), bins=<span class="num">30</span>, alpha=<span class="num">.5</span>) +
+  <span class="func">geom_density</span>(alpha=<span class="num">.4</span>) +
+  <span class="func">facet_wrap</span>(~group, scales=<span class="str">"free_y"</span>)
+
+<span class="comment"># 3. Q-Q plot（比 Shapiro 更具資訊量）</span>
+<span class="func">ggplot</span>(df, <span class="func">aes</span>(sample=value)) + <span class="func">stat_qq</span>() + <span class="func">stat_qq_line</span>() + <span class="func">facet_wrap</span>(~group)
+
+<span class="comment"># 4. 常態性檢定（搭配 Q-Q）</span>
+df %&gt;% <span class="func">group_by</span>(group) %&gt;%
+  <span class="func">summarise</span>(p_shapiro = <span class="func">shapiro.test</span>(value)$p.value)
+
+<span class="comment"># 5. 離群值偵測（MAD）</span>
+df %&gt;% <span class="func">mutate</span>(z_mad = <span class="func">abs</span>(value - <span class="func">median</span>(value)) / <span class="func">mad</span>(value),
+            outlier = z_mad &gt; <span class="num">3</span>)
+</pre></div>
+<div class="code-tab-content" id="py6"><pre><span class="kw">import</span> pandas <span class="kw">as</span> pd, numpy <span class="kw">as</span> np
+<span class="kw">import</span> seaborn <span class="kw">as</span> sns, matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">from</span> scipy <span class="kw">import</span> stats
+<span class="kw">import</span> pingouin <span class="kw">as</span> pg
+
+df = pd.<span class="func">read_csv</span>(<span class="str">"data.csv"</span>)
+
+<span class="comment"># 1. 一覽</span>
+print(df.<span class="func">describe</span>())
+print(df.<span class="func">isna</span>().<span class="func">sum</span>())
+
+<span class="comment"># 2. 視覺化（distplot 已棄用，改 histplot+kdeplot）</span>
+sns.<span class="func">displot</span>(df, x=<span class="str">"value"</span>, hue=<span class="str">"group"</span>, kind=<span class="str">"hist"</span>, kde=True, stat=<span class="str">"density"</span>)
+
+<span class="comment"># 3. Q-Q plot</span>
+fig, ax = plt.<span class="func">subplots</span>(<span class="num">1</span>, <span class="num">2</span>, figsize=(<span class="num">10</span>,<span class="num">4</span>))
+<span class="kw">for</span> i, (g, sub) <span class="kw">in</span> <span class="func">enumerate</span>(df.<span class="func">groupby</span>(<span class="str">"group"</span>)):
+    stats.<span class="func">probplot</span>(sub.value, dist=<span class="str">"norm"</span>, plot=ax[i])
+
+<span class="comment"># 4. 常態性檢定 — pingouin 一行</span>
+print(pg.<span class="func">normality</span>(df, dv=<span class="str">"value"</span>, group=<span class="str">"group"</span>, method=<span class="str">"shapiro"</span>))
+
+<span class="comment"># 5. MAD 離群值</span>
+mad = stats.<span class="func">median_abs_deviation</span>(df.value)
+df[<span class="str">"z_mad"</span>] = np.<span class="func">abs</span>(df.value - df.value.<span class="func">median</span>()) / mad
+df[<span class="str">"outlier"</span>] = df.z_mad &gt; <span class="num">3</span>
+</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="常見陷阱" data-en="COMMON PITFALLS">常見陷阱</div>
+<h2 data-zh="三、EDA 常見錯誤" data-en="III. EDA pitfalls">三、EDA 常見錯誤</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>❌ <span data-zh="只看 mean ± SD" data-en="Only mean ± SD">只看 mean ± SD</span></h4><div data-lang="zh"><p>不檢視分布就報摘要統計 = Anscombe 警告。永遠先畫圖。</p></div><div data-lang="en"><p>Reporting summary stats without inspecting distribution = Anscombe's warning. Always plot first.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="把 Shapiro 當路標" data-en="Treating Shapiro as a gatekeeper">把 Shapiro 當路標</span></h4><div data-lang="zh"><p>n=500 拿到 p=0.01 就改無母數，可能犧牲檢定效力。先看 Q-Q 與偏度。</p></div><div data-lang="en"><p>At n=500, p=0.01 doesn't mean switch to non-parametric — may lose power. Look at the Q-Q and skewness.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="刪除離群值不報告" data-en="Silent outlier removal">悄悄刪離群值</span></h4><div data-lang="zh"><p>刪除任何資料點必須在方法說明、附理由（技術錯誤？）並做 sensitivity analysis。</p></div><div data-lang="en"><p>Any removal must be in Methods, justified (technical error?), and accompanied by a sensitivity analysis.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="忽略缺失值機制" data-en="Ignoring missingness mechanism">忽略缺失機制</span></h4><div data-lang="zh"><p>MCAR / MAR / MNAR 影響 imputation 合法性。&gt; 20% 缺失需慎重處理。</p></div><div data-lang="en"><p>MCAR / MAR / MNAR determine imputation validity. &gt; 20% missing requires careful handling.</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗" data-en="🎯 Quick Quiz">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="哪個離群值偵測法對極端值最穩健？" data-en="Most robust outlier detection method?">最穩健的離群值偵測？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Mean ± 3·SD</div>
+<div class="quiz-opt" data-correct="true">MAD ± 3</div>
+<div class="quiz-opt" data-correct="false">Mean ± 2·SE</div>
+<div class="quiz-opt" data-correct="false">Pearson r</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>2. <span data-zh="樣本 n=1000，Shapiro-Wilk p=0.01 應如何解讀？" data-en="With n=1000, Shapiro p=0.01 means?">n=1000, Shapiro p=0.01 應如何解讀？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="嚴重非常態，必須改無母數" data-en="Highly non-normal, switch to non-parametric">嚴重非常態必改</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="可能只是微小偏離；應查 Q-Q 與偏度" data-en="Likely trivial deviation; inspect Q-Q and skewness">微小偏離，看 Q-Q</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="樣本太多，刪一半" data-en="Too many samples, halve them">樣本太多</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="重新採集" data-en="Recollect data">重採</span></div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>3. <span data-zh="Anscombe's quartet 提醒我們的教訓是？" data-en="Lesson of Anscombe's quartet?">Anscombe's quartet 的教訓？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="樣本數要 ≥ 30" data-en="n must be ≥ 30">n ≥ 30</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="摘要統計相同的資料可能分布截然不同；務必畫圖" data-en="Identical summary stats can come from very different distributions; always plot">畫圖優於摘要</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="只能用 R 不能用 Python" data-en="R only, not Python">R only</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="迴歸線不可信" data-en="Regression lines unreliable">迴歸線不可信</span></div>
+</div><div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="image-quant.html"><span class="nav-dir">← 上一章</span><span class="nav-title" data-zh="Step 5 · 影像定量分析" data-en="Step 5 · Image Quantification">Step 5 · 影像定量分析</span></a>
+<a href="hypothesis-testing.html"><span class="nav-dir">下一章 →</span><span class="nav-title" data-zh="Step 7 · 假設檢定" data-en="Step 7 · Hypothesis Testing">Step 7 · 假設檢定</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — QDA Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'});
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！':'✗ 再想想';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+
+// EDA simulator - approximate Shapiro using skewness as proxy
+const ctx=document.getElementById('edaChart');
+const chart=new Chart(ctx,{type:'bar',data:{labels:[],datasets:[{label:'frequency',data:[],backgroundColor:'#3730a3'}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{title:{display:true,text:'value'}},y:{title:{display:true,text:'count'}}}}});
+function randn(){let u=Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function sim(){
+  const n=+document.getElementById('sliderN').value;
+  const sk=+document.getElementById('sliderSk').value;
+  document.getElementById('valN').textContent=n;
+  document.getElementById('valSk').textContent=sk.toFixed(1);
+  const data=[];
+  for(let i=0;i<n;i++){let z=randn(); if(sk>0) z=Math.sign(z)*Math.pow(Math.abs(z),1+sk*0.5); data.push(z);}
+  // Histogram
+  const min=Math.min(...data), max=Math.max(...data);
+  const nbins=20, w=(max-min)/nbins, hist=Array(nbins).fill(0), labels=[];
+  for(let i=0;i<nbins;i++){labels.push((min+i*w).toFixed(1));}
+  data.forEach(v=>{let b=Math.min(nbins-1,Math.floor((v-min)/w));hist[b]++;});
+  chart.data.labels=labels;chart.data.datasets[0].data=hist;chart.update();
+  // Approximate p-value: heuristic based on n and skewness
+  const stat = Math.pow(sk, 2) * n / 6;          // pseudo-test statistic ~ chi2-ish
+  const p = Math.exp(-stat/2);                    // crude approximation
+  document.getElementById('statP').textContent='Approx Shapiro p ≈ '+p.toExponential(2);
+  const advise = p<0.05 ? 'p<0.05 → "顯著"（但若 n>300 通常無實質意義）' : 'p≥0.05 → 與常態無顯著偏離';
+  document.getElementById('statAdv').textContent=advise;
+  document.getElementById('statAdv').className='sim-stat '+(p>=0.05||n>300?'pass':'fail');
+}
+['sliderN','sliderSk'].forEach(id=>document.getElementById(id).oninput=sim);sim();
+</script>
+</body></html>

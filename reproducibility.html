@@ -1,0 +1,168 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 13: Reproducibility &amp; Reporting Standards — QDA</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li><li><a href="western-blot.html">WB</a></li><li><a href="elisa.html">ELISA</a></li><li><a href="flow-cytometry.html">Flow</a></li><li><a href="image-quant.html">Image</a></li><li><a href="eda.html">EDA</a></li><li><a href="hypothesis-testing.html">Tests</a></li><li><a href="multiple-testing.html">MTC</a></li><li><a href="regression.html">Regr.</a></li><li><a href="effect-size.html">ES/Power</a></li><li><a href="omics-quant.html">Omics</a></li><li><a href="visualization.html">Viz</a></li><li><a href="reproducibility.html" class="active">Repro.</a></li><li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 13 / 14</div>
+<h1 data-zh="再現性與報告標準" data-en="Reproducibility &amp; Reporting Standards">再現性與報告標準</h1>
+<p class="subtitle" data-lang="zh">MIQE、ARRIVE 2.0、CONSORT、FAIR、preregistration——讓你的數據可被重現。</p>
+<p class="subtitle" data-lang="en">MIQE, ARRIVE 2.0, CONSORT, FAIR, preregistration — make your data reproducible.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="可重現性危機是真的" data-en="The reproducibility crisis is real">可重現性危機有多嚴重？</h2>
+<div data-lang="zh"><p>Begley & Ellis 2012 (<em>Nature</em>) 嘗試重現 53 篇臨床前癌症論文，只有 <strong>6 篇</strong>（11%）可重現。Baker 2016 (<em>Nature</em>) 調查 1,576 名科學家，<strong>&gt;70%</strong> 曾無法重現他人結果，&gt;50% 連自己的結果也無法重現。</p>
+<p>為對抗此問題，學界推出一系列<strong>報告規範 (Reporting Guidelines)</strong>：每種研究類型都有對應的 checklist。投稿主流期刊時必須附上對應的 completed checklist。EQUATOR Network 是規範總覽入口 (https://equator-network.org/)。</p></div>
+<div data-lang="en"><p>Begley & Ellis 2012 (<em>Nature</em>) attempted to reproduce 53 preclinical cancer papers — only <strong>6</strong> (11%) succeeded. Baker 2016 (<em>Nature</em>) surveyed 1,576 scientists: <strong>&gt;70%</strong> failed to reproduce someone else's results; &gt;50% couldn't reproduce their own.</p>
+<p>Reporting guidelines arose in response — every study type has a checklist. Top journals require a completed checklist on submission. The EQUATOR Network is the master portal (https://equator-network.org/).</p></div>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div><span data-lang="zh"><strong>核心原則：</strong>「再現性 (reproducibility)」是「給同樣資料同樣程式碼能得到相同結果」；「重複性 (replicability)」是「新資料能驗證原結論」。兩者皆需要 transparent reporting。</span><span data-lang="en"><strong>Core:</strong> "Reproducibility" = same data + code → same result. "Replicability" = new data confirms the conclusion. Both require transparent reporting.</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="報告規範" data-en="REPORTING GUIDELINES">報告規範</div>
+<h2 data-zh="一、各類研究的 reporting guideline" data-en="I. Guidelines by study type">一、依研究類型對照 guideline</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="研究類型" data-en="Study type">研究類型</th><th data-zh="規範" data-en="Guideline">規範</th><th data-zh="最新版" data-en="Latest">最新</th><th data-zh="主要要求" data-en="Key requirement">主要要求</th></tr></thead>
+<tbody>
+<tr><td>RT-qPCR</td><td><strong>MIQE 2.0</strong></td><td>2025 (Bustin)</td><td data-zh="RIN、PCR 效率、reference gene 驗證、LOD/LOQ CI" data-en="RIN, PCR efficiency, reference validation, LOD/LOQ CI">RIN+E+ref+LOD CI</td></tr>
+<tr><td>dPCR</td><td>dMIQE</td><td>2020 (Huggett)</td><td data-zh="分割數、Poisson 假設" data-en="Partition counts, Poisson assumption">分割數</td></tr>
+<tr><td>Flow cytometry</td><td>MIFlowCyt / MIFlowCyt-EV</td><td>2008 / 2020</td><td data-zh="儀器設定、補償矩陣、FMO" data-en="Instrument, comp. matrix, FMO">儀器+comp+FMO</td></tr>
+<tr><td data-zh="動物實驗" data-en="Animal studies">動物實驗</td><td><strong>ARRIVE 2.0</strong></td><td>2020 (Percie du Sert)</td><td data-zh="Essential 10 + Recommended Set" data-en="Essential 10 + Recommended Set">10+10 項</td></tr>
+<tr><td>RCT</td><td>CONSORT</td><td>2010 (Schulz)</td><td data-zh="隨機化、盲法、CONSORT flow diagram" data-en="Randomization, blinding, flow diagram">隨機+盲+流程圖</td></tr>
+<tr><td data-zh="觀察性研究" data-en="Observational">觀察性</td><td>STROBE</td><td>2007</td><td data-zh="背景、選樣、偏誤、混淆" data-en="Rationale, selection, bias, confounders">選樣+偏誤</td></tr>
+<tr><td data-zh="診斷準確度" data-en="Diagnostic accuracy">診斷準確度</td><td><strong>STARD-AI</strong></td><td>2025 (Salim, <em>Nat Med</em>)</td><td data-zh="STARD 30 項 + 18 項 AI 專屬" data-en="STARD 30 + 18 AI-specific items">STARD+AI</td></tr>
+<tr><td data-zh="預測模型" data-en="Prediction model">預測模型</td><td><strong>TRIPOD+AI</strong></td><td>2024 (Collins, <em>BMJ</em>)</td><td data-zh="ML 公平性、外部驗證" data-en="ML fairness, external validation">公平性+外部</td></tr>
+<tr><td data-zh="醫學影像 AI" data-en="Medical imaging AI">醫學影像 AI</td><td>CLAIM</td><td>2020 (Mongan)</td><td data-zh="資料來源、標註、訓練細節" data-en="Data source, annotation, training">資料+訓練</td></tr>
+<tr><td data-zh="系統綜述" data-en="Systematic review">系統綜述</td><td>PRISMA 2020</td><td>2021 (Page)</td><td data-zh="搜尋策略、流程圖、PROSPERO 註冊" data-en="Search strategy, flow, PROSPERO">搜尋+註冊</td></tr>
+<tr><td data-zh="資料管理" data-en="Data management">資料管理</td><td><strong>FAIR</strong></td><td>2016 (Wilkinson)</td><td data-zh="Findable, Accessible, Interoperable, Reusable" data-en="Findable, Accessible, Interoperable, Reusable">F+A+I+R</td></tr>
+</tbody></table>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="工作流" data-en="WORKFLOW">工作流</div>
+<h2 data-zh="二、可重現研究工作流" data-en="II. Reproducible research workflow">二、從計畫到發表的可重現工作流</h2>
+<div class="workflow">
+<div class="workflow-step" data-step="1"><h4 data-zh="實驗前：preregister 你的假設與分析計畫" data-en="Before: preregister hypothesis &amp; analysis plan">實驗前：preregister</h4><div data-lang="zh"><p>在 OSF (osf.io) 或 ClinicalTrials.gov 註冊。明列主要分析、樣本數估算、停止規則。</p></div><div data-lang="en"><p>Register on OSF (osf.io) or ClinicalTrials.gov. State primary analyses, sample-size justification, stopping rules.</p></div></div>
+<div class="workflow-step" data-step="2"><h4 data-zh="實驗中：標準作業 + 完整 metadata" data-en="During: SOP + complete metadata">實驗中：SOP + metadata</h4><div data-lang="zh"><p>抗體 RRID、PCR primer 序列、儀器設定全部記錄。實驗 notebook 用 Benchling 或 LabArchives。</p></div><div data-lang="en"><p>Antibody RRIDs, primer sequences, instrument settings — log everything. Use Benchling or LabArchives.</p></div></div>
+<div class="workflow-step" data-step="3"><h4 data-zh="分析：Quarto / RMarkdown + renv" data-en="Analysis: Quarto / RMarkdown + renv">分析：可執行報告</h4><div data-lang="zh"><p>所有圖表都在 .qmd / .Rmd 動態生成；用 <code>renv</code> 或 Docker 鎖定 R/Python 版本與套件。</p></div><div data-lang="en"><p>Every figure generated dynamically in .qmd / .Rmd; lock R/Python versions with <code>renv</code> or Docker.</p></div></div>
+<div class="workflow-step" data-step="4"><h4 data-zh="發表：資料 + 程式碼 + checklist 同時上傳" data-en="Publication: data + code + checklist together">發表：三件套</h4><div data-lang="zh"><p>原始資料上 Zenodo / GEO / PRIDE；程式碼上 GitHub + Zenodo DOI；完整 reporting checklist 隨稿附上。</p></div><div data-lang="en"><p>Raw data → Zenodo / GEO / PRIDE; code → GitHub + Zenodo DOI; full reporting checklist as supplement.</p></div></div>
+<div class="workflow-step" data-step="5"><h4 data-zh="發表後：DOI 引用 + 持續維護" data-en="Post-publication: DOI citations + maintenance">發表後：持續維護</h4><div data-lang="zh"><p>修正 issue、更新 README、版本化（v1.0.1）。Erratum 必要時於 PubMed 顯示。</p></div><div data-lang="en"><p>Fix issues, update README, version (v1.0.1). File errata on PubMed if needed.</p></div></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="三、可重現環境的鎖定方法" data-en="III. Locking reproducible environments">三、環境鎖定一覽</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" data-tab="r13">R</button><button class="code-tab-btn" data-tab="py13">Python</button></div>
+<div class="code-tab-content active" id="r13"><pre><span class="comment"># 1. renv 鎖定套件版本</span>
+<span class="kw">install.packages</span>(<span class="str">"renv"</span>)
+renv::<span class="func">init</span>()            <span class="comment"># 自動偵測 .R/.Rmd 用到的套件，寫入 renv.lock</span>
+renv::<span class="func">snapshot</span>()        <span class="comment"># 隨時更新 lock</span>
+renv::<span class="func">restore</span>()         <span class="comment"># 他人從 renv.lock 還原</span>
+
+<span class="comment"># 2. Quarto 文檔：YAML + 動態程式碼 + 引用</span>
+<span class="comment"># --- header.qmd</span>
+<span class="comment">## ---</span>
+<span class="comment">## title: "QC report"</span>
+<span class="comment">## execute:</span>
+<span class="comment">##   warning: false</span>
+<span class="comment">##   echo: true</span>
+<span class="comment">## bibliography: refs.bib</span>
+<span class="comment">## format: html</span>
+<span class="comment">## ---</span>
+
+<span class="comment"># 3. 工作流：Make / targets 管理任務依賴</span>
+<span class="kw">library</span>(targets)
+tar_target(raw_data, <span class="func">read_csv</span>(<span class="str">"data/raw.csv"</span>))
+tar_target(clean,    <span class="func">qc_filter</span>(raw_data))
+tar_target(fig1,     <span class="func">plot_fig1</span>(clean))
+</pre></div>
+<div class="code-tab-content" id="py13"><pre><span class="comment"># 1. 鎖環境（建議 uv 或 conda）</span>
+<span class="comment"># uv：</span>
+uv init && uv add pandas numpy scipy scikit-learn deseq2 pingouin
+<span class="comment"># 產生 uv.lock，他人 uv sync 即還原</span>
+
+<span class="comment"># conda：</span>
+conda env create -f environment.yml
+conda env export --from-history > environment.yml
+
+<span class="comment"># 2. Quarto + Python — 同樣語法</span>
+<span class="comment"># 3. Snakemake / nextflow 工作流</span>
+<span class="kw">rule</span> all:
+    input: <span class="str">"results/fig1.png"</span>
+
+<span class="kw">rule</span> qc:
+    input:  <span class="str">"data/raw.csv"</span>
+    output: <span class="str">"data/clean.csv"</span>
+    shell:  <span class="str">"python qc.py {input} {output}"</span>
+
+<span class="kw">rule</span> fig1:
+    input:  <span class="str">"data/clean.csv"</span>
+    output: <span class="str">"results/fig1.png"</span>
+    shell:  <span class="str">"python fig1.py {input} {output}"</span>
+
+<span class="comment"># 4. Docker 最徹底 — 鎖系統依賴</span>
+<span class="comment"># FROM rocker/r-ver:4.3.2 / python:3.11-slim</span>
+</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="FAIR 原則" data-en="FAIR PRINCIPLES">FAIR 原則</div>
+<h2 data-zh="四、FAIR 資料管理原則" data-en="IV. FAIR data management">四、FAIR 原則</h2>
+<div class="card-grid cols-2">
+<div class="card"><div class="card-icon">🔎</div><h4>F – Findable</h4><div data-lang="zh"><p>資料有 persistent identifier (DOI)、metadata 完整可被搜尋。</p></div><div data-lang="en"><p>Data have persistent IDs (DOI); metadata is rich and indexed.</p></div></div>
+<div class="card"><div class="card-icon">🔓</div><h4>A – Accessible</h4><div data-lang="zh"><p>可由標準協定取得（HTTP/FTP）；即使資料 access-controlled，metadata 仍須公開。</p></div><div data-lang="en"><p>Retrievable via standard protocols (HTTP/FTP); even if data are access-controlled, metadata remains public.</p></div></div>
+<div class="card"><div class="card-icon">🔗</div><h4>I – Interoperable</h4><div data-lang="zh"><p>使用社群標準格式（HDF5、CSV、OME-TIFF）、本體（ontology）與詞彙表。</p></div><div data-lang="en"><p>Use community-standard formats (HDF5, CSV, OME-TIFF), ontologies, and shared vocabularies.</p></div></div>
+<div class="card"><div class="card-icon">♻️</div><h4>R – Reusable</h4><div data-lang="zh"><p>清楚的授權 (CC-BY, MIT)、來源 (provenance)、與符合領域標準的 metadata。</p></div><div data-lang="en"><p>Clear licensing (CC-BY, MIT), provenance, and domain-relevant metadata.</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗" data-en="🎯 Quick Quiz">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="動物實驗的主要報告規範？" data-en="Main guideline for animal studies?">動物實驗報告規範？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">CONSORT</div>
+<div class="quiz-opt" data-correct="true">ARRIVE 2.0</div>
+<div class="quiz-opt" data-correct="false">PRISMA</div>
+<div class="quiz-opt" data-correct="false">STROBE</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>2. <span data-zh="2024 年針對 ML 預測模型的最新報告規範？" data-en="2024 latest guideline for ML prediction models?">2024 ML 預測模型最新規範？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">TRIPOD 2015</div>
+<div class="quiz-opt" data-correct="true">TRIPOD+AI (Collins 2024, BMJ)</div>
+<div class="quiz-opt" data-correct="false">CONSORT-AI</div>
+<div class="quiz-opt" data-correct="false">STARD 2015</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>3. <span data-zh="FAIR 原則中的 'A' 代表？" data-en="What does 'A' in FAIR stand for?">FAIR 中 A 代表？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Accurate</div>
+<div class="quiz-opt" data-correct="true">Accessible</div>
+<div class="quiz-opt" data-correct="false">Anonymous</div>
+<div class="quiz-opt" data-correct="false">Audited</div>
+</div><div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="visualization.html"><span class="nav-dir">← 上一章</span><span class="nav-title" data-zh="Step 12 · 資料視覺化與報告" data-en="Step 12 · Data Visualization &amp;amp; Reporting">Step 12 · 資料視覺化與報告</span></a>
+<a href="ai-ml.html"><span class="nav-dir">下一章 →</span><span class="nav-title" data-zh="Step 14 · AI / ML 在量化分析的應用" data-en="Step 14 · AI / ML for Quantitative Analysis">Step 14 · AI / ML 在量化分析的應用</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — QDA Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'});
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！':'✗ 再想想';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+</script>
+</body></html>

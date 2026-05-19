@@ -1,0 +1,180 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 8: Multiple Testing — QDA</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li><li><a href="western-blot.html">WB</a></li><li><a href="elisa.html">ELISA</a></li><li><a href="flow-cytometry.html">Flow</a></li><li><a href="image-quant.html">Image</a></li><li><a href="eda.html">EDA</a></li><li><a href="hypothesis-testing.html">Tests</a></li><li><a href="multiple-testing.html" class="active">MTC</a></li><li><a href="regression.html">Regr.</a></li><li><a href="effect-size.html">ES/Power</a></li><li><a href="omics-quant.html">Omics</a></li><li><a href="visualization.html">Viz</a></li><li><a href="reproducibility.html">Repro.</a></li><li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 8 / 14</div>
+<h1 data-zh="多重比較與校正" data-en="Multiple Testing Correction">多重比較與校正</h1>
+<p class="subtitle" data-lang="zh">FWER vs FDR、Bonferroni、Holm、BH-FDR、q-value——組學時代的多重檢定哲學。</p>
+<p class="subtitle" data-lang="en">FWER vs FDR, Bonferroni, Holm, BH-FDR, q-values — multiple testing in the omics era.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="20,000 個基因，每個都做 t-test 會怎樣？" data-en="20,000 genes × one t-test each — what happens?">為什麼一定要校正？</h2>
+<div data-lang="zh"><p>若每個檢定的 α=0.05，跑 10,000 個獨立檢定，<strong>期望</strong>就有 500 個假陽性。早期生物醫學論文只用單一 p &lt; 0.05 列入「顯著」基因，導致 reproducibility crisis 的主因之一。</p>
+<p>多重檢定校正分兩派：(1) <strong>FWER (Family-Wise Error Rate)</strong>：控制「至少一個假陽性」的機率，代表如 Bonferroni、Holm；保守、適合驗證關鍵假設。(2) <strong>FDR (False Discovery Rate)</strong>：控制顯著結果中假陽性的<strong>比例</strong>，代表 Benjamini-Hochberg (1995) 與 Storey q-value (2003)；功效高，組學分析標準。</p></div>
+<div data-lang="en"><p>If each test uses α=0.05 and you run 10,000 independent tests, you <strong>expect</strong> 500 false positives. Early biomedical papers calling "significant" anything with raw p &lt; 0.05 is a major driver of the reproducibility crisis.</p>
+<p>Multiple testing splits into two philosophies: (1) <strong>FWER (Family-Wise Error Rate)</strong> — probability of ≥1 false positive; Bonferroni, Holm. Conservative, suited to confirmatory tests. (2) <strong>FDR (False Discovery Rate)</strong> — expected fraction of false positives among significant calls; Benjamini-Hochberg (1995) and Storey q-value (2003). Higher power; the omics standard.</p></div>
+<div class="callout tip"><span class="callout-icon">💡</span><div><span data-lang="zh"><strong>核心區別：</strong>FWER 控制「我有任何錯誤的機率」；FDR 控制「我的錯誤比例」。若 100 個顯著結果中 q=0.05，預期約 5 個是假陽性。</span><span data-lang="en"><strong>Core distinction:</strong> FWER = probability of any error; FDR = proportion of errors. q=0.05 among 100 hits ≈ 5 false positives expected.</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="方法比較" data-en="METHOD COMPARISON">方法比較</div>
+<h2 data-zh="一、校正方法一覽" data-en="I. Methods at a glance">一、校正方法一覽表</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="方法" data-en="Method">方法</th><th data-zh="控制" data-en="Controls">控制</th><th data-zh="保守性" data-en="Conservatism">保守度</th><th data-zh="適用場景" data-en="Use case">使用場景</th></tr></thead>
+<tbody>
+<tr><td><strong>Bonferroni</strong></td><td>FWER</td><td data-zh="極保守" data-en="Very conservative">極保守</td><td data-zh="少量驗證性檢定" data-en="Few confirmatory tests">少量驗證</td></tr>
+<tr><td><strong>Holm (1979)</strong></td><td>FWER</td><td data-zh="保守但較 Bonferroni 強" data-en="Conservative, better power than Bonferroni">較 Bonferroni 強</td><td data-zh="任何多比較，皆優於 Bonferroni" data-en="Always preferred over Bonferroni">任何 FWER 場景</td></tr>
+<tr><td><strong>BH (1995)</strong></td><td>FDR</td><td data-zh="平衡" data-en="Balanced">平衡</td><td data-zh="組學差異基因/蛋白 (DESeq2/edgeR 預設)" data-en="Omics DE (DESeq2/edgeR default)">組學分析</td></tr>
+<tr><td><strong>Storey q-value</strong></td><td>FDR</td><td data-zh="較 BH 略寬，估 π₀" data-en="Less conservative, estimates π₀">較 BH 寬</td><td data-zh="大量檢定且預期多數為 null" data-en="Many tests, many nulls">大量檢定</td></tr>
+<tr><td><strong>Tukey HSD</strong></td><td>FWER</td><td data-zh="特化於 ANOVA 後 pairwise" data-en="ANOVA post-hoc">ANOVA 後</td><td data-zh="所有 pairwise" data-en="All pairwise">所有兩兩</td></tr>
+<tr><td><strong>Dunnett's</strong></td><td>FWER</td><td data-zh="特化於對照組比較" data-en="Specifically for vs-control">對照組比較</td><td data-zh="多組 vs 同一對照" data-en="Multi-group vs one control">vs 對照</td></tr>
+</tbody></table>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="校正方法在 10,000 個檢定上的表現" data-en="Methods on 10,000 tests">校正方法的對比視覺化</h2>
+<div data-lang="zh"><p>調整真陽性比例與 α，觀察 Bonferroni、BH、q-value 篩出的「顯著」基因數差異。<strong>關鍵：</strong>BH 給你更多顯著結果，但允許 5% 是假陽性。</p></div>
+<div data-lang="en"><p>Adjust true-positive proportion and α. See how Bonferroni, BH, q-value differ in hit count. <strong>Key:</strong> BH yields more hits but accepts ~5% false positives.</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span data-zh="真陽性比例 π₁" data-en="True positive proportion π₁">π₁</span><span id="valPi">5%</span></label><input type="range" id="sliderPi" min="0" max="50" value="5"></div>
+<div class="slider-group"><label><span>α</span><span id="valA">0.05</span></label><input type="range" id="sliderA" min="0.001" max="0.1" value="0.05" step="0.001"></div>
+<div class="sim-stats"><span class="sim-stat pass" id="statBonf">—</span><span class="sim-stat pass" id="statBH">—</span></div>
+<div class="chart-container"><canvas id="mtChart"></canvas></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="二、R / Python 校正一覽" data-en="II. Correction in R / Python">二、套用校正</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" data-tab="r8">R</button><button class="code-tab-btn" data-tab="py8">Python</button></div>
+<div class="code-tab-content active" id="r8"><pre><span class="comment"># Base R: p.adjust 多種方法</span>
+p_raw &lt;- <span class="func">c</span>(<span class="num">0.001</span>, <span class="num">0.01</span>, <span class="num">0.02</span>, <span class="num">0.03</span>, <span class="num">0.04</span>, <span class="num">0.5</span>)
+<span class="func">p.adjust</span>(p_raw, method=<span class="str">"bonferroni"</span>)
+<span class="func">p.adjust</span>(p_raw, method=<span class="str">"holm"</span>)
+<span class="func">p.adjust</span>(p_raw, method=<span class="str">"BH"</span>)         <span class="comment"># Benjamini-Hochberg</span>
+<span class="func">p.adjust</span>(p_raw, method=<span class="str">"BY"</span>)         <span class="comment"># Benjamini-Yekutieli (depnedent tests)</span>
+
+<span class="comment"># Storey q-value（Bioconductor）</span>
+<span class="kw">library</span>(qvalue)
+qobj &lt;- <span class="func">qvalue</span>(p=p_raw)
+qobj$qvalues   <span class="comment"># q-values（FDR 控制）</span>
+qobj$pi0       <span class="comment"># 估算 π₀（真 null 比例）</span>
+
+<span class="comment"># ANOVA 後 Tukey HSD / Dunnett's</span>
+fit &lt;- <span class="func">aov</span>(value ~ group, data=df)
+<span class="func">TukeyHSD</span>(fit)
+<span class="kw">library</span>(multcomp)
+<span class="func">summary</span>(<span class="func">glht</span>(fit, linfct=<span class="func">mcp</span>(group=<span class="str">"Dunnett"</span>)))
+</pre></div>
+<div class="code-tab-content" id="py8"><pre><span class="kw">from</span> statsmodels.stats.multitest <span class="kw">import</span> multipletests
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+p_raw = np.<span class="func">array</span>([<span class="num">0.001</span>, <span class="num">0.01</span>, <span class="num">0.02</span>, <span class="num">0.03</span>, <span class="num">0.04</span>, <span class="num">0.5</span>])
+
+<span class="func">multipletests</span>(p_raw, method=<span class="str">"bonferroni"</span>)
+<span class="func">multipletests</span>(p_raw, method=<span class="str">"holm"</span>)
+<span class="func">multipletests</span>(p_raw, method=<span class="str">"fdr_bh"</span>)     <span class="comment"># BH</span>
+<span class="func">multipletests</span>(p_raw, method=<span class="str">"fdr_by"</span>)     <span class="comment"># BY</span>
+
+<span class="comment"># Storey q-value 透過 multipy 或 rpy2</span>
+<span class="kw">from</span> multipy.fdr <span class="kw">import</span> qvalue
+significant, q = <span class="func">qvalue</span>(p_raw, threshold=<span class="num">0.05</span>)
+
+<span class="comment"># Tukey HSD via pingouin</span>
+<span class="kw">import</span> pingouin <span class="kw">as</span> pg
+print(pg.<span class="func">pairwise_tukey</span>(data=df, dv=<span class="str">"value"</span>, between=<span class="str">"group"</span>))
+</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="常見陷阱" data-en="COMMON PITFALLS">常見陷阱</div>
+<h2 data-zh="三、最常見的多重校正錯誤" data-en="III. Common multiple-testing mistakes">三、最常見的錯誤</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>❌ <span data-zh="把 q 值講成 p 值" data-en="Calling q-value a p-value">把 q 值講成 p 值</span></h4><div data-lang="zh"><p>「q=0.03 顯著」與「p=0.03 顯著」意義不同：q 控制比例（5% 顯著結果是假陽性），p 控制單次錯誤。要明確標示。</p></div><div data-lang="en"><p>"q=0.03 significant" ≠ "p=0.03 significant": q controls proportion (5% of hits are false), p controls per-test error. Label explicitly.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="先篩 DEG 再做 GO 又校正" data-en="Filter DEGs then redo BH on GO terms">先篩 DEG 再校正 GO</span></h4><div data-lang="zh"><p>先以 BH 篩 DEG (FDR&lt;0.05) → 再對 GO terms 跑 BH，二次校正會破壞統計獨立性假設。應正確使用 enrichGO 等預先設計的工具。</p></div><div data-lang="en"><p>Selecting DEGs at FDR&lt;0.05 then re-applying BH on GO breaks independence. Use enrichGO-style tools designed for this.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="基因 vs 轉錄本 FDR 混淆" data-en="Gene vs transcript FDR confusion">基因 vs 轉錄本 FDR</span></h4><div data-lang="zh"><p>同一基因多個轉錄本各自檢定 → FDR 顯著數量會被「拆細」放大。tximport 應 collapse 至 gene-level 再 DESeq2。</p></div><div data-lang="en"><p>Multiple transcripts per gene split FDR inflation. Use tximport to collapse to gene-level before DESeq2.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="二次決策不校正" data-en="No correction for follow-up tests">二次決策不校正</span></h4><div data-lang="zh"><p>從 100 個 hit 中再挑 10 個做機制驗證 = pre-selection bias，後續顯著率仍有膨脹。整個 pipeline 須一致記錄。</p></div><div data-lang="en"><p>Picking 10 of 100 hits for follow-up = pre-selection bias inflates the final α. Pre-register the full pipeline.</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗" data-en="🎯 Quick Quiz">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="組學差異分析最常用的校正？" data-en="Most common correction in omics DE?">組學 DE 分析最常用校正？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Bonferroni</div>
+<div class="quiz-opt" data-correct="true">Benjamini-Hochberg (FDR)</div>
+<div class="quiz-opt" data-correct="false">Tukey HSD</div>
+<div class="quiz-opt" data-correct="false">Dunnett's</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>2. <span data-zh="Bonferroni 與 BH 的核心差別？" data-en="Core difference between Bonferroni and BH?">Bonferroni vs BH 差別？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="無差別" data-en="None">無差別</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="Bonferroni 控制 FWER；BH 控制 FDR" data-en="Bonferroni controls FWER; BH controls FDR">FWER vs FDR</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="BH 只適用 R" data-en="BH only in R">BH 只 R</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="Bonferroni 較強功效" data-en="Bonferroni has higher power">Bonferroni 功效高</span></div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>3. <span data-zh="多組 vs 同一對照組比較最適合？" data-en="Best for multi-group vs single control?">多組 vs 同對照？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Tukey HSD</div>
+<div class="quiz-opt" data-correct="true">Dunnett's test</div>
+<div class="quiz-opt" data-correct="false">Bonferroni only</div>
+<div class="quiz-opt" data-correct="false">Holm</div>
+</div><div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="hypothesis-testing.html"><span class="nav-dir">← 上一章</span><span class="nav-title" data-zh="Step 7 · 假設檢定" data-en="Step 7 · Hypothesis Testing">Step 7 · 假設檢定</span></a>
+<a href="regression.html"><span class="nav-dir">下一章 →</span><span class="nav-title" data-zh="Step 9 · 回歸、相關與劑量反應" data-en="Step 9 · Regression, Correlation, Dose-Response">Step 9 · 回歸、相關與劑量反應</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — QDA Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'});
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！':'✗ 再想想';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+
+const ctx=document.getElementById('mtChart');
+const chart=new Chart(ctx,{type:'bar',data:{labels:['Raw p<α','Bonferroni','BH','Storey q'],datasets:[
+  {label:'True positives',data:[],backgroundColor:'#3730a3'},
+  {label:'False positives',data:[],backgroundColor:'#b91c1c'}
+]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true,title:{display:true,text:'count'}}}}});
+function sim(){
+  const pi1=+document.getElementById('sliderPi').value/100;
+  const a  =+document.getElementById('sliderA').value;
+  document.getElementById('valPi').textContent=(pi1*100).toFixed(1)+'%';
+  document.getElementById('valA').textContent=a.toFixed(3);
+  const m=10000;
+  const m1=Math.round(m*pi1), m0=m-m1;
+  // Raw: each null has prob a of FP
+  const FP_raw = m0*a, TP_raw = m1*0.7;     // assume power 70%
+  // Bonferroni: α/m
+  const aBonf = a/m;
+  const FP_bonf = m0*aBonf, TP_bonf = m1*Math.max(0, 0.7 - 0.5*Math.log10(1/aBonf));
+  // BH: roughly significant if rank/m * q >= p; approximate hits proportional
+  const FP_bh = TP_raw*a, TP_bh = TP_raw*0.95;
+  const FP_q = FP_bh*0.9, TP_q = TP_bh*1.05;
+  chart.data.datasets[0].data=[TP_raw, TP_bonf, TP_bh, TP_q].map(v=>Math.round(v));
+  chart.data.datasets[1].data=[FP_raw, FP_bonf, FP_bh, FP_q].map(v=>Math.round(v));
+  chart.update();
+  document.getElementById('statBonf').textContent='Bonferroni: '+Math.round(TP_bonf+FP_bonf)+' hits';
+  document.getElementById('statBH').textContent='BH-FDR: '+Math.round(TP_bh+FP_bh)+' hits';
+}
+['sliderPi','sliderA'].forEach(id=>document.getElementById(id).oninput=sim);sim();
+</script>
+</body></html>

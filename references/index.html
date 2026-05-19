@@ -1,0 +1,356 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>References — Quantitative Data &amp; Analysis</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .ref-section{background:var(--c-surface);border:1px solid var(--c-border-light);border-radius:var(--radius-lg);padding:24px 28px;margin:16px 0;box-shadow:var(--shadow-sm)}
+  .ref-section h3{font-family:var(--font-display);font-size:1.25rem;color:var(--c-accent-dark);margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .ref-section h3 .step-tag{background:var(--c-accent);color:#fff;padding:3px 10px;border-radius:6px;font-size:.72rem;letter-spacing:1px;font-weight:700}
+  .ref-section .topic{font-size:.88rem;color:var(--c-ink-muted);margin-bottom:14px}
+  .ref-list{list-style:none;padding:0}
+  .ref-list li{padding:10px 0;border-bottom:1px dashed var(--c-border-light);font-size:.92rem;line-height:1.55}
+  .ref-list li:last-child{border-bottom:none}
+  .ref-list .authors{color:var(--c-ink);font-weight:600}
+  .ref-list .year{color:var(--c-highlight);font-weight:600;margin-left:6px}
+  .ref-list .title{display:block;color:var(--c-ink-light);margin:4px 0}
+  .ref-list .source{color:var(--c-ink-muted);font-style:italic}
+  .ref-list a{color:var(--c-accent);text-decoration:none;border-bottom:1px dotted var(--c-accent)}
+  .ref-list a:hover{color:var(--c-accent-dark)}
+  .ref-tag{display:inline-block;background:var(--c-highlight-light);color:var(--c-highlight);padding:2px 8px;border-radius:4px;font-size:.7rem;font-weight:700;margin-left:6px;letter-spacing:.5px}
+  .ref-tag.new{background:#fee2e2;color:#b91c1c}
+  .ref-tag.guideline{background:#dbeafe;color:#1e40af}
+  .ref-tag.book{background:#f3e8ff;color:#6b21a8}
+  .errata{background:#fef3c7;border-left:4px solid #d97706;border-radius:0 var(--radius-lg) var(--radius-lg) 0;padding:18px 22px;margin:18px 0;font-size:.9rem}
+  .errata h4{margin:0 0 8px;color:#92400e;font-family:var(--font-display);font-size:1.05rem}
+  .errata p{color:#78350f;margin-bottom:8px;line-height:1.65}
+  .errata ul{margin:6px 0 0 0;padding-left:20px;color:#78350f}
+  .errata ul li{padding:3px 0;line-height:1.55}
+  .toc{background:var(--c-accent-light);padding:18px 24px;border-radius:var(--radius-lg);margin:24px 0}
+  .toc h4{font-family:var(--font-display);color:var(--c-accent-dark);margin-bottom:10px}
+  .toc ol{columns:2;column-gap:32px;padding-left:24px;font-size:.92rem}
+  .toc li{padding:3px 0}
+  .toc a{color:var(--c-accent-dark);text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+  @media(max-width:768px){.toc ol{columns:1}}
+</style>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="../index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="../qpcr.html">qPCR</a></li>
+    <li><a href="../western-blot.html">WB</a></li>
+    <li><a href="../elisa.html">ELISA</a></li>
+    <li><a href="../flow-cytometry.html">Flow</a></li>
+    <li><a href="../image-quant.html">Image</a></li>
+    <li><a href="../eda.html">EDA</a></li>
+    <li><a href="../hypothesis-testing.html">Tests</a></li>
+    <li><a href="../multiple-testing.html">MTC</a></li>
+    <li><a href="../regression.html">Regr.</a></li>
+    <li><a href="../effect-size.html">ES/Power</a></li>
+    <li><a href="../omics-quant.html">Omics</a></li>
+    <li><a href="../visualization.html">Viz</a></li>
+    <li><a href="../reproducibility.html">Repro.</a></li>
+    <li><a href="../ai-ml.html">ML</a></li>
+    <li><a href="index.html" class="active" style="font-weight:700" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+
+<header class="hub-hero"><div style="position:relative;z-index:1;">
+<h1 data-zh="參考資料佐證" data-en="References &amp; Citations">參考資料佐證</h1>
+<p data-lang="zh">14 主題 80+ 筆權威文獻、reporting guidelines、教科書與官方工具網址，附 DOI。標 <span class="ref-tag new">NEW</span> 為 2024-2025 年發表。</p>
+<p data-lang="en">80+ authoritative references across 14 topics: papers, reporting guidelines, textbooks, and official tools — with DOI. <span class="ref-tag new">NEW</span> = published 2024-2025.</p>
+</div></header>
+
+<main class="content-wrap" style="max-width:980px;">
+
+<div class="toc">
+<h4 data-zh="目錄" data-en="Contents">目錄</h4>
+<ol>
+<li><a href="#s1">qPCR / RT-qPCR</a></li>
+<li><a href="#s2">Western Blot</a></li>
+<li><a href="#s3">ELISA &amp; Standard Curves</a></li>
+<li><a href="#s4">Flow Cytometry</a></li>
+<li><a href="#s5">Image Quantification</a></li>
+<li><a href="#s6">EDA</a></li>
+<li><a href="#s7">Hypothesis Testing</a></li>
+<li><a href="#s8">Multiple Testing</a></li>
+<li><a href="#s9">Regression &amp; Dose-Response</a></li>
+<li><a href="#s10">Effect Size &amp; Power</a></li>
+<li><a href="#s11">Omics Quantification</a></li>
+<li><a href="#s12">Visualization</a></li>
+<li><a href="#s13">Reproducibility</a></li>
+<li><a href="#s14">AI / ML</a></li>
+</ol>
+</div>
+
+<div class="ref-section" id="s1">
+<h3><span class="step-tag">Step 1</span> qPCR / RT-qPCR</h3>
+<div class="topic" data-zh="即時定量 PCR 方法學、MIQE 規範、數位 PCR" data-en="qPCR methodology, MIQE, digital PCR">即時定量 PCR 方法學、MIQE 規範、數位 PCR</div>
+<ul class="ref-list">
+<li><span class="authors">Bustin SA, et al.</span><span class="year">2025</span><span class="ref-tag new">NEW</span><span class="ref-tag guideline">Guideline</span><span class="title">MIQE 2.0: Revision of the Minimum Information for Publication of Quantitative Real-Time PCR Experiments Guidelines.</span><span class="source">Clin Chem 71(6):634. </span><a href="https://doi.org/10.1093/clinchem/hvaf043" target="_blank">10.1093/clinchem/hvaf043</a></li>
+<li><span class="authors">Bustin SA, et al.</span><span class="year">2009</span><span class="ref-tag guideline">Guideline</span><span class="title">The MIQE guidelines: minimum information for publication of quantitative real-time PCR experiments.</span><span class="source">Clin Chem. </span><a href="https://doi.org/10.1373/clinchem.2008.112797" target="_blank">10.1373/clinchem.2008.112797</a></li>
+<li><span class="authors">Livak KJ, Schmittgen TD</span><span class="year">2001</span><span class="title">Analysis of relative gene expression data using real-time quantitative PCR and the 2^−ΔΔCT method.</span><span class="source">Methods. </span><a href="https://doi.org/10.1006/meth.2001.1262" target="_blank">10.1006/meth.2001.1262</a></li>
+<li><span class="authors">Vandesompele J, et al.</span><span class="year">2002</span><span class="title">geNorm: accurate normalization by geometric averaging of multiple internal control genes.</span><span class="source">Genome Biol. </span><a href="https://doi.org/10.1186/gb-2002-3-7-research0034" target="_blank">10.1186/gb-2002-3-7-research0034</a></li>
+<li><span class="authors">Huggett JF, et al.</span><span class="year">2020</span><span class="ref-tag guideline">Guideline</span><span class="title">The Digital MIQE Guidelines Update (dMIQE 2020).</span><span class="source">Clin Chem 66(8):1012. </span><a href="https://doi.org/10.1093/clinchem/hvaa125" target="_blank">10.1093/clinchem/hvaa125</a></li>
+<li><span class="authors">Mehle N, et al.</span><span class="year">2025</span><span class="ref-tag new">NEW</span><span class="title">MIQE 2.0 and the Urgent Need to Rethink qPCR Standards.</span><span class="source">Int J Mol Sci 26(11):4975. </span><a href="https://doi.org/10.3390/ijms26114975" target="_blank">10.3390/ijms26114975</a></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s2">
+<h3><span class="step-tag">Step 2</span> <span data-zh="Western Blot 定量" data-en="Western Blot Quantification">Western Blot 定量</span></h3>
+<div class="topic" data-zh="蛋白質定量、loading control、normalization、linear dynamic range" data-en="Protein quantification, loading controls, normalization, linear dynamic range">蛋白質定量、loading control、normalization</div>
+<ul class="ref-list">
+<li><span class="authors">Aldridge GM, et al.</span><span class="year">2008</span><span class="title">The use of total protein stains as loading controls.</span><span class="source">J Neurosci Methods. </span><a href="https://doi.org/10.1016/j.jneumeth.2008.05.003" target="_blank">10.1016/j.jneumeth.2008.05.003</a></li>
+<li><span class="authors">Romero-Calvo I, et al.</span><span class="year">2010</span><span class="title">Reversible Ponceau staining as a loading control alternative to actin in Western blots.</span><span class="source">Anal Biochem. </span><a href="https://doi.org/10.1016/j.ab.2010.02.036" target="_blank">10.1016/j.ab.2010.02.036</a></li>
+<li><span class="authors">Gürtler A, et al.</span><span class="year">2013</span><span class="title">Stain-Free technology as a normalization tool in Western blot analysis.</span><span class="source">Anal Biochem. </span><a href="https://doi.org/10.1016/j.ab.2012.10.010" target="_blank">10.1016/j.ab.2012.10.010</a></li>
+<li><span class="authors">Taylor SC, et al.</span><span class="year">2013</span><span class="title">A defined methodology for reliable quantification of Western blot data.</span><span class="source">Mol Biotechnol. </span><a href="https://doi.org/10.1007/s12033-013-9672-6" target="_blank">10.1007/s12033-013-9672-6</a></li>
+<li><span class="authors">Pillai-Kastoori L, et al.</span><span class="year">2020</span><span class="title">Antibody validation for Western blot: by the user, for the user.</span><span class="source">J Biol Chem / Anal Biochem. </span><a href="https://doi.org/10.1016/j.ab.2020.113608" target="_blank">10.1016/j.ab.2020.113608</a></li>
+<li><span class="authors">Hagstrom AD, et al.</span><span class="year">2025</span><span class="ref-tag new">NEW</span><span class="title">Superior normalization using total protein for western blot analysis of human adipocytes.</span><span class="source">PLOS ONE. </span><a href="https://doi.org/10.1371/journal.pone.0328136" target="_blank">10.1371/journal.pone.0328136</a></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s3">
+<h3><span class="step-tag">Step 3</span> ELISA &amp; Standard Curves</h3>
+<div class="topic">4-PL / 5-PL fitting, LOD/LOQ, parallelism, antibody validation</div>
+<ul class="ref-list">
+<li><span class="authors">Findlay JWA, Dillard RF</span><span class="year">2007</span><span class="title">Appropriate calibration curve fitting in ligand binding assays.</span><span class="source">AAPS J. </span><a href="https://doi.org/10.1208/aapsj0902029" target="_blank">10.1208/aapsj0902029</a></li>
+<li><span class="authors">Gottschalk PG, Dunn JR</span><span class="year">2005</span><span class="title">The five-parameter logistic: a characterization and comparison with the four-parameter logistic.</span><span class="source">Anal Biochem. </span><a href="https://doi.org/10.1016/j.ab.2005.04.035" target="_blank">10.1016/j.ab.2005.04.035</a></li>
+<li><span class="authors">Armbruster DA, Pry T</span><span class="year">2008</span><span class="title">Limit of Blank, Limit of Detection and Limit of Quantitation.</span><span class="source">Clin Biochem Rev 29 Suppl 1:S49. PMID: 18852857</span></li>
+<li><span class="authors">Ayoubi R, et al.</span><span class="year">2023</span><span class="title">Scaling of an antibody validation procedure.</span><span class="source">eLife 12:RP91645. </span><a href="https://doi.org/10.7554/eLife.91645" target="_blank">10.7554/eLife.91645</a></li>
+<li><span class="authors">Biass D, et al.</span><span class="year">2024</span><span class="ref-tag new">NEW</span><span class="title">YCharOS protocol for antibody validation.</span><span class="source">Nat Protoc. </span><a href="https://doi.org/10.1038/s41596-024-01108-6" target="_blank">10.1038/s41596-024-01108-6</a></li>
+<li><span class="authors">FDA</span><span class="year">2018</span><span class="ref-tag guideline">Guideline</span><span class="title">Bioanalytical Method Validation Guidance for Industry.</span><span class="source"><a href="https://www.fda.gov/regulatory-information/search-fda-guidance-documents/bioanalytical-method-validation-guidance-industry" target="_blank">FDA.gov</a></span></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s4">
+<h3><span class="step-tag">Step 4</span> Flow Cytometry</h3>
+<div class="topic">Compensation, gating, MFI, spectral cytometry, MIFlowCyt</div>
+<ul class="ref-list">
+<li><span class="authors">Lee JA, et al.</span><span class="year">2008</span><span class="ref-tag guideline">Guideline</span><span class="title">MIFlowCyt: the minimum information about a flow cytometry experiment.</span><span class="source">Cytometry A. </span><a href="https://doi.org/10.1002/cyto.a.20623" target="_blank">10.1002/cyto.a.20623</a></li>
+<li><span class="authors">Cossarizza A, et al.</span><span class="year">2021</span><span class="ref-tag guideline">Guideline</span><span class="title">Guidelines for the use of flow cytometry and cell sorting in immunological studies (3rd ed.).</span><span class="source">Eur J Immunol. </span><a href="https://doi.org/10.1002/eji.202170126" target="_blank">10.1002/eji.202170126</a></li>
+<li><span class="authors">Welsh JA, et al.</span><span class="year">2020</span><span class="ref-tag guideline">Guideline</span><span class="title">MIFlowCyt-EV: a framework for standardized reporting of EV flow cytometry experiments.</span><span class="source">J Extracell Vesicles. </span><a href="https://doi.org/10.1080/20013078.2020.1713526" target="_blank">10.1080/20013078.2020.1713526</a></li>
+<li><span class="authors">Roederer M</span><span class="year">2001</span><span class="title">Spectral compensation for flow cytometry.</span><span class="source">Cytometry. </span><a href="https://doi.org/10.1002/1097-0320(20011101)45:3%3C194::AID-CYTO1163%3E3.0.CO;2-C" target="_blank">10.1002/cyto.1163</a></li>
+<li><span class="authors">Bonilla DL, et al.</span><span class="year">2025</span><span class="ref-tag new">NEW</span><span class="title">Spectral Flow Cytometry: The Current State and Future.</span><span class="source">Cells. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12193525/" target="_blank">PMC12193525</a></span></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s5">
+<h3><span class="step-tag">Step 5</span> Image Quantification</h3>
+<div class="topic">Fiji, QuPath, CellProfiler, Cellpose3, colocalization, QUAREP-LiMi</div>
+<ul class="ref-list">
+<li><span class="authors">Schindelin J, et al.</span><span class="year">2012</span><span class="title">Fiji: an open-source platform for biological-image analysis.</span><span class="source">Nat Methods. </span><a href="https://doi.org/10.1038/nmeth.2019" target="_blank">10.1038/nmeth.2019</a></li>
+<li><span class="authors">Bankhead P, et al.</span><span class="year">2017</span><span class="title">QuPath: open source software for digital pathology image analysis.</span><span class="source">Sci Rep. </span><a href="https://doi.org/10.1038/s41598-017-17204-5" target="_blank">10.1038/s41598-017-17204-5</a></li>
+<li><span class="authors">Stirling DR, et al.</span><span class="year">2021</span><span class="title">CellProfiler 4: improvements in speed, utility and usability.</span><span class="source">BMC Bioinformatics. </span><a href="https://doi.org/10.1186/s12859-021-04344-9" target="_blank">10.1186/s12859-021-04344-9</a></li>
+<li><span class="authors">Stringer C, et al.</span><span class="year">2021</span><span class="title">Cellpose: a generalist algorithm for cellular segmentation.</span><span class="source">Nat Methods 18:100. </span><a href="https://doi.org/10.1038/s41592-020-01018-x" target="_blank">10.1038/s41592-020-01018-x</a></li>
+<li><span class="authors">Stringer C, Pachitariu M</span><span class="year">2025</span><span class="ref-tag new">NEW</span><span class="title">Cellpose3: one-click image restoration for improved cellular segmentation.</span><span class="source">Nat Methods 22:592. </span><a href="https://doi.org/10.1038/s41592-025-02595-5" target="_blank">10.1038/s41592-025-02595-5</a></li>
+<li><span class="authors">Manders EMM, et al.</span><span class="year">1993</span><span class="title">Measurement of co-localization of objects in dual-colour confocal images.</span><span class="source">J Microsc. </span><a href="https://doi.org/10.1111/j.1365-2818.1993.tb03313.x" target="_blank">10.1111/j.1365-2818.1993.tb03313.x</a></li>
+<li><span class="authors">Nelson G, et al.</span><span class="year">QUAREP-LiMi</span><span class="ref-tag guideline">Initiative</span><span class="title">Quality Assessment and Reproducibility for Instruments &amp; Images in Light Microscopy.</span><span class="source"><a href="https://quarep.org/" target="_blank">quarep.org</a></span></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s6">
+<h3><span class="step-tag">Step 6</span> EDA</h3>
+<div class="topic">Tukey EDA, normality testing, outlier detection</div>
+<ul class="ref-list">
+<li><span class="authors">Tukey JW</span><span class="year">1977</span><span class="ref-tag book">Book</span><span class="title">Exploratory Data Analysis.</span><span class="source">Addison-Wesley. ISBN 978-0201076165</span></li>
+<li><span class="authors">Shapiro SS, Wilk MB</span><span class="year">1965</span><span class="title">An analysis of variance test for normality (complete samples).</span><span class="source">Biometrika 52:591. </span><a href="https://doi.org/10.1093/biomet/52.3-4.591" target="_blank">10.1093/biomet/52.3-4.591</a></li>
+<li><span class="authors">Razali NM, Wah YB</span><span class="year">2011</span><span class="title">Power comparisons of Shapiro-Wilk, Kolmogorov-Smirnov, Lilliefors and Anderson-Darling.</span><span class="source">J Stat Modeling and Analytics 2(1):21.</span></li>
+<li><span class="authors">Leys C, et al.</span><span class="year">2013</span><span class="title">Detecting outliers: Do not use SD around the mean, use MAD around the median.</span><span class="source">J Exp Soc Psychol. </span><a href="https://doi.org/10.1016/j.jesp.2013.03.013" target="_blank">10.1016/j.jesp.2013.03.013</a></li>
+<li><span class="authors">Knief U, Forstmeier W</span><span class="year">2025</span><span class="ref-tag new">NEW</span><span class="title">Testing for normality in regression models: mistakes abound (but may not matter).</span><span class="source">R Soc Open Sci. </span><a href="https://doi.org/10.1098/rsos.241904" target="_blank">10.1098/rsos.241904</a></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s7">
+<h3><span class="step-tag">Step 7</span> Hypothesis Testing</h3>
+<div class="topic">t-test, ANOVA, non-parametric, ASA statements on p-values</div>
+<ul class="ref-list">
+<li><span class="authors">Welch BL</span><span class="year">1947</span><span class="title">The generalization of "Student's" problem when several different population variances are involved.</span><span class="source">Biometrika. </span><a href="https://doi.org/10.1093/biomet/34.1-2.28" target="_blank">10.1093/biomet/34.1-2.28</a></li>
+<li><span class="authors">Wasserstein RL, Lazar NA</span><span class="year">2016</span><span class="ref-tag guideline">Statement</span><span class="title">The ASA's Statement on p-Values: Context, Process, and Purpose.</span><span class="source">Am Stat 70(2):129. </span><a href="https://doi.org/10.1080/00031305.2016.1154108" target="_blank">10.1080/00031305.2016.1154108</a></li>
+<li><span class="authors">Wasserstein RL, Schirm AL, Lazar NA</span><span class="year">2019</span><span class="title">Moving to a World Beyond "p &lt; 0.05".</span><span class="source">Am Stat 73(sup1):1. </span><a href="https://doi.org/10.1080/00031305.2019.1583913" target="_blank">10.1080/00031305.2019.1583913</a></li>
+<li><span class="authors">Delacre M, Lakens D, Leys C</span><span class="year">2017</span><span class="title">Why psychologists should by default use Welch's t-test instead of Student's t-test.</span><span class="source">Int Rev Soc Psychol. </span><a href="https://doi.org/10.5334/irsp.82" target="_blank">10.5334/irsp.82</a></li>
+<li><span class="authors">Efron B, Tibshirani R</span><span class="year">1993</span><span class="ref-tag book">Book</span><span class="title">An Introduction to the Bootstrap.</span><span class="source">Chapman &amp; Hall. ISBN 978-0412042317</span></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s8">
+<h3><span class="step-tag">Step 8</span> Multiple Testing Correction</h3>
+<div class="topic">FWER, FDR, Bonferroni, Holm, BH, q-value</div>
+<ul class="ref-list">
+<li><span class="authors">Benjamini Y, Hochberg Y</span><span class="year">1995</span><span class="title">Controlling the false discovery rate: a practical and powerful approach to multiple testing.</span><span class="source">JRSS B 57(1):289. </span><a href="https://doi.org/10.1111/j.2517-6161.1995.tb02031.x" target="_blank">10.1111/j.2517-6161.1995.tb02031.x</a></li>
+<li><span class="authors">Holm S</span><span class="year">1979</span><span class="title">A simple sequentially rejective multiple test procedure.</span><span class="source">Scand J Stat 6(2):65.</span></li>
+<li><span class="authors">Storey JD, Tibshirani R</span><span class="year">2003</span><span class="title">Statistical significance for genomewide studies.</span><span class="source">PNAS 100(16):9440. </span><a href="https://doi.org/10.1073/pnas.1530509100" target="_blank">10.1073/pnas.1530509100</a></li>
+<li><span class="authors">Dunnett CW</span><span class="year">1955</span><span class="title">A multiple comparison procedure for comparing several treatments with a control.</span><span class="source">JASA 50:1096. </span><a href="https://doi.org/10.1080/01621459.1955.10501294" target="_blank">10.1080/01621459.1955.10501294</a></li>
+<li><span class="authors">Liu L, et al.</span><span class="year">2024</span><span class="ref-tag new">NEW</span><span class="title">2dGBH: Two-dimensional group Benjamini-Hochberg procedure.</span><span class="source">Bioinformatics 40(2):btae035. </span><a href="https://doi.org/10.1093/bioinformatics/btae035" target="_blank">10.1093/bioinformatics/btae035</a></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s9">
+<h3><span class="step-tag">Step 9</span> Regression &amp; Dose-Response</h3>
+<div class="topic">Linear / nonlinear regression, IC50, Hill equation, Michaelis-Menten</div>
+<ul class="ref-list">
+<li><span class="authors">Ritz C, Baty F, Streibig JC, Gerhard D</span><span class="year">2015</span><span class="title">Dose-Response Analysis Using R.</span><span class="source">PLOS ONE 10(12):e0146021. </span><a href="https://doi.org/10.1371/journal.pone.0146021" target="_blank">10.1371/journal.pone.0146021</a></li>
+<li><span class="authors">Motulsky H, Christopoulos A</span><span class="year">2004</span><span class="ref-tag book">Book</span><span class="title">Fitting Models to Biological Data Using Linear and Nonlinear Regression.</span><span class="source">Oxford UP. ISBN 978-0195171792</span></li>
+<li><span class="authors">Sebaugh JL</span><span class="year">2011</span><span class="title">Guidelines for accurate EC50/IC50 estimation.</span><span class="source">Pharm Stat 10(2):128. </span><a href="https://doi.org/10.1002/pst.426" target="_blank">10.1002/pst.426</a></li>
+<li><span class="authors">Cornish-Bowden A</span><span class="year">2012</span><span class="ref-tag book">Book</span><span class="title">Fundamentals of Enzyme Kinetics, 4th ed.</span><span class="source">Wiley-Blackwell.</span></li>
+<li><span class="authors">Johnson KA, Goody RS</span><span class="year">2011</span><span class="title">The original Michaelis constant: Translation of the 1913 Michaelis-Menten paper.</span><span class="source">Biochemistry 50:8264. </span><a href="https://doi.org/10.1021/bi201284u" target="_blank">10.1021/bi201284u</a></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s10">
+<h3><span class="step-tag">Step 10</span> Effect Size &amp; Power</h3>
+<div class="topic">Cohen's d, Hedges' g, η², G*Power, post-hoc power debate</div>
+<ul class="ref-list">
+<li><span class="authors">Cohen J</span><span class="year">1988</span><span class="ref-tag book">Book</span><span class="title">Statistical Power Analysis for the Behavioral Sciences, 2nd ed.</span><span class="source">Routledge. ISBN 978-0805802832</span></li>
+<li><span class="authors">Hedges LV</span><span class="year">1981</span><span class="title">Distribution theory for Glass's estimator of effect size.</span><span class="source">J Educ Stat 6(2):107. </span><a href="https://doi.org/10.3102/10769986006002107" target="_blank">10.3102/10769986006002107</a></li>
+<li><span class="authors">Faul F, Erdfelder E, Lang A-G, Buchner A</span><span class="year">2007</span><span class="title">G*Power 3: A flexible statistical power analysis program.</span><span class="source">Behav Res Methods 39:175. </span><a href="https://doi.org/10.3758/BF03193146" target="_blank">10.3758/BF03193146</a></li>
+<li><span class="authors">Hoenig JM, Heisey DM</span><span class="year">2001</span><span class="title">The abuse of power: the pervasive fallacy of power calculations for data analysis.</span><span class="source">Am Stat 55:19. </span><a href="https://doi.org/10.1198/000313001300339897" target="_blank">10.1198/000313001300339897</a></li>
+<li><span class="authors">Giner-Sorolla R, et al.</span><span class="year">2024</span><span class="ref-tag new">NEW</span><span class="title">Power to Detect What? Considerations for Planning and Evaluating Sample Size.</span><span class="source">Pers Soc Psychol Rev. </span><a href="https://doi.org/10.1177/10888683241228328" target="_blank">10.1177/10888683241228328</a></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s11">
+<h3><span class="step-tag">Step 11</span> Omics Quantification</h3>
+<div class="topic">RNA-seq / proteomics quantification, normalization, DESeq2, MaxLFQ</div>
+<ul class="ref-list">
+<li><span class="authors">Wagner GP, et al.</span><span class="year">2012</span><span class="title">Measurement of mRNA abundance using RNA-seq data: RPKM measure is inconsistent among samples.</span><span class="source">Theory Biosci. </span><a href="https://doi.org/10.1007/s12064-012-0162-3" target="_blank">10.1007/s12064-012-0162-3</a></li>
+<li><span class="authors">Love MI, Huber W, Anders S</span><span class="year">2014</span><span class="title">Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2.</span><span class="source">Genome Biol. </span><a href="https://doi.org/10.1186/s13059-014-0550-8" target="_blank">10.1186/s13059-014-0550-8</a></li>
+<li><span class="authors">Robinson MD, McCarthy DJ, Smyth GK</span><span class="year">2010</span><span class="title">edgeR: a Bioconductor package for differential expression analysis.</span><span class="source">Bioinformatics. </span><a href="https://doi.org/10.1093/bioinformatics/btp616" target="_blank">10.1093/bioinformatics/btp616</a></li>
+<li><span class="authors">Law CW, et al.</span><span class="year">2014</span><span class="title">voom: precision weights unlock linear model analysis tools for RNA-seq read counts.</span><span class="source">Genome Biol. </span><a href="https://doi.org/10.1186/gb-2014-15-2-r29" target="_blank">10.1186/gb-2014-15-2-r29</a></li>
+<li><span class="authors">Zhu A, Ibrahim JG, Love MI</span><span class="year">2018</span><span class="title">Heavy-tailed prior distributions for sequence count data (apeglm).</span><span class="source">Bioinformatics. </span><a href="https://doi.org/10.1093/bioinformatics/bty895" target="_blank">10.1093/bioinformatics/bty895</a></li>
+<li><span class="authors">Cox J, et al.</span><span class="year">2014</span><span class="title">Accurate proteome-wide label-free quantification by delayed normalization and MaxLFQ.</span><span class="source">Mol Cell Proteomics. </span><a href="https://doi.org/10.1074/mcp.M113.031591" target="_blank">10.1074/mcp.M113.031591</a></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s12">
+<h3><span class="step-tag">Step 12</span> Visualization &amp; Reporting</h3>
+<div class="topic">ggplot2, SuperPlots, color-blind palettes, UpSet plot, Tufte</div>
+<ul class="ref-list">
+<li><span class="authors">Wickham H</span><span class="year">2016</span><span class="ref-tag book">Book</span><span class="title">ggplot2: Elegant Graphics for Data Analysis.</span><span class="source">Springer. </span><a href="https://doi.org/10.1007/978-3-319-24277-4" target="_blank">10.1007/978-3-319-24277-4</a></li>
+<li><span class="authors">Waskom ML</span><span class="year">2021</span><span class="title">seaborn: statistical data visualization.</span><span class="source">J Open Source Softw 6(60):3021. </span><a href="https://doi.org/10.21105/joss.03021" target="_blank">10.21105/joss.03021</a></li>
+<li><span class="authors">Weissgerber TL, et al.</span><span class="year">2015</span><span class="title">Beyond Bar and Line Graphs: Time for a New Data Presentation Paradigm.</span><span class="source">PLOS Biol. </span><a href="https://doi.org/10.1371/journal.pbio.1002128" target="_blank">10.1371/journal.pbio.1002128</a></li>
+<li><span class="authors">Lord SJ, et al.</span><span class="year">2020</span><span class="title">SuperPlots: Communicating reproducibility and variability in cell biology.</span><span class="source">J Cell Biol. </span><a href="https://doi.org/10.1083/jcb.202001064" target="_blank">10.1083/jcb.202001064</a></li>
+<li><span class="authors">Lex A, et al.</span><span class="year">2014</span><span class="title">UpSet: Visualization of Intersecting Sets.</span><span class="source">IEEE Trans Vis Comput Graph. </span><a href="https://doi.org/10.1109/TVCG.2014.2346248" target="_blank">10.1109/TVCG.2014.2346248</a></li>
+<li><span class="authors">Wilke CO</span><span class="year">2019</span><span class="ref-tag book">Book</span><span class="title">Fundamentals of Data Visualization.</span><span class="source">O'Reilly. <a href="https://clauswilke.com/dataviz/" target="_blank">free online</a></span></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s13">
+<h3><span class="step-tag">Step 13</span> Reproducibility &amp; Reporting</h3>
+<div class="topic">MIQE, ARRIVE 2.0, CONSORT, FAIR, preregistration, reproducibility crisis</div>
+<ul class="ref-list">
+<li><span class="authors">Percie du Sert N, et al.</span><span class="year">2020</span><span class="ref-tag guideline">Guideline</span><span class="title">The ARRIVE guidelines 2.0: Updated guidelines for reporting animal research.</span><span class="source">PLOS Biol. </span><a href="https://doi.org/10.1371/journal.pbio.3000410" target="_blank">10.1371/journal.pbio.3000410</a></li>
+<li><span class="authors">Schulz KF, Altman DG, Moher D</span><span class="year">2010</span><span class="ref-tag guideline">Guideline</span><span class="title">CONSORT 2010 Statement: updated guidelines for reporting parallel group randomised trials.</span><span class="source">BMJ. </span><a href="https://doi.org/10.1136/bmj.c332" target="_blank">10.1136/bmj.c332</a></li>
+<li><span class="authors">Wilkinson MD, et al.</span><span class="year">2016</span><span class="title">The FAIR Guiding Principles for scientific data management and stewardship.</span><span class="source">Sci Data. </span><a href="https://doi.org/10.1038/sdata.2016.18" target="_blank">10.1038/sdata.2016.18</a></li>
+<li><span class="authors">Begley CG, Ellis LM</span><span class="year">2012</span><span class="title">Raise standards for preclinical cancer research.</span><span class="source">Nature 483:531. </span><a href="https://doi.org/10.1038/483531a" target="_blank">10.1038/483531a</a></li>
+<li><span class="authors">Baker M</span><span class="year">2016</span><span class="title">1,500 scientists lift the lid on reproducibility.</span><span class="source">Nature 533:452. </span><a href="https://doi.org/10.1038/533452a" target="_blank">10.1038/533452a</a></li>
+<li><span class="authors">EQUATOR Network</span><span class="year">—</span><span class="ref-tag guideline">Portal</span><span class="title">Enhancing the QUAlity and Transparency Of health Research.</span><span class="source"><a href="https://www.equator-network.org/" target="_blank">equator-network.org</a></span></li>
+</ul>
+</div>
+
+<div class="ref-section" id="s14">
+<h3><span class="step-tag">Step 14</span> AI / ML for Quantification</h3>
+<div class="topic">TRIPOD+AI, STARD-AI, ROC vs PR, SHAP, calibration, data leakage</div>
+<ul class="ref-list">
+<li><span class="authors">Collins GS, et al.</span><span class="year">2024</span><span class="ref-tag new">NEW</span><span class="ref-tag guideline">Guideline</span><span class="title">TRIPOD+AI statement: updated guidance for reporting clinical prediction models using regression or machine learning methods.</span><span class="source">BMJ. </span><a href="https://doi.org/10.1136/bmj-2023-078378" target="_blank">10.1136/bmj-2023-078378</a></li>
+<li><span class="authors">Salim I, et al.</span><span class="year">2025</span><span class="ref-tag new">NEW</span><span class="ref-tag guideline">Guideline</span><span class="title">The STARD-AI reporting guideline for diagnostic accuracy studies using AI.</span><span class="source">Nat Med. </span><a href="https://doi.org/10.1038/s41591-025-03953-8" target="_blank">10.1038/s41591-025-03953-8</a></li>
+<li><span class="authors">Mongan J, Moy L, Kahn CE</span><span class="year">2020</span><span class="ref-tag guideline">Guideline</span><span class="title">CLAIM: Checklist for Artificial Intelligence in Medical Imaging.</span><span class="source">Radiol Artif Intell. </span><a href="https://doi.org/10.1148/ryai.2020200029" target="_blank">10.1148/ryai.2020200029</a></li>
+<li><span class="authors">Lundberg SM, Lee S-I</span><span class="year">2017</span><span class="title">A Unified Approach to Interpreting Model Predictions (SHAP).</span><span class="source">NeurIPS. </span><a href="https://doi.org/10.48550/arXiv.1705.07874" target="_blank">arXiv:1705.07874</a></li>
+<li><span class="authors">Saito T, Rehmsmeier M</span><span class="year">2015</span><span class="title">The Precision-Recall Plot Is More Informative than the ROC Plot When Evaluating Binary Classifiers on Imbalanced Datasets.</span><span class="source">PLOS ONE. </span><a href="https://doi.org/10.1371/journal.pone.0118432" target="_blank">10.1371/journal.pone.0118432</a></li>
+<li><span class="authors">Van Calster B, et al.</span><span class="year">2019</span><span class="title">Calibration: the Achilles heel of predictive analytics.</span><span class="source">BMC Med. </span><a href="https://doi.org/10.1186/s12916-019-1466-7" target="_blank">10.1186/s12916-019-1466-7</a></li>
+</ul>
+</div>
+
+<!-- ===================== Errata (consolidated) ===================== -->
+<section class="section section-anchor" id="errata">
+<div class="section-label" data-zh="教學註記" data-en="TUTORIAL NOTES">教學註記</div>
+<h2 data-zh="📌 教學註記與細節" data-en="📌 Tutorial Notes & Details">📌 教學註記與細節</h2>
+<p data-lang="zh">以下整理本頁引用脈絡中容易被忽略、但會直接影響資料判讀與報告品質的補充說明。內容皆為延伸閱讀，所引文獻已收錄於上方各 Step；目的在於把零散注記集中於一處，方便日後查閱。</p>
+<p data-lang="en">Below is a consolidated set of notes that often slip past readers but materially affect data interpretation and reporting quality. These are extended discussion items — the underlying references already appear in the Step sections above, and gathering them here is meant to make later look-up easier.</p>
+
+<div class="errata">
+<h4>E1 · MIQE 2.0 vs MIQE 2009 (Bustin 2025, Clin Chem)</h4>
+<p data-lang="zh">MIQE 2009 (Bustin et al., Clin Chem 2009) 奠定了 qPCR 報告的最低資訊清單；MIQE 2.0 (Bustin et al., Clin Chem 71(6):634, 2025) 為十六年來首次正式修訂。新增重點：(1) RT 步驟單獨報告，priming 策略、RT 酵素、RT 效率皆需揭露；(2) 內部校正基因 (reference gene) 必須以 geNorm/NormFinder 等方法驗證穩定性，「使用 GAPDH 或 β-actin」已不再被接受為正當理由；(3) dPCR (digital PCR) 另立 dMIQE 2020 (Huggett, Clin Chem 66(8):1012)。Mehle 2025 (Int J Mol Sci 26(11):4975) 進一步指出許多期刊仍允許 2009 版的舊報告格式，造成 reproducibility gap。建議：作者於投稿時即填寫 MIQE 2.0 checklist 並附 supplementary。</p>
+<p data-lang="en">MIQE 2009 (Bustin et al., Clin Chem 2009) established the minimum-information checklist for qPCR; MIQE 2.0 (Bustin et al., Clin Chem 71(6):634, 2025) is the first major revision in 16 years. Key additions: (1) the RT step is reported separately — priming strategy, RT enzyme and RT efficiency must all be disclosed; (2) reference genes must be validated for stability with geNorm/NormFinder — "we used GAPDH or β-actin" is no longer an acceptable justification; (3) digital PCR has its own dMIQE 2020 (Huggett, Clin Chem 66(8):1012). Mehle 2025 (Int J Mol Sci 26(11):4975) notes that many journals still accept legacy 2009-style reports, perpetuating a reproducibility gap. Recommendation: fill the MIQE 2.0 checklist at submission and attach it as supplementary material.</p>
+</div>
+
+<div class="errata">
+<h4>E2 · Western Blot — Total Protein Normalization (Hagstrom 2025, PLOS ONE)</h4>
+<p data-lang="zh">單一 housekeeping band (β-actin、GAPDH、α-tubulin) 作為 loading control 已被多篇文獻證實在病理樣本、藥物處理、發育階段中本身會變動，且其線性動態範圍 (LDR) 通常 &lt; 2 logs。Total Protein Normalization (TPN) — 以 Stain-Free、Ponceau S 或 REVERT/SYPRO Ruby 染整條膜 — 提供 ~3 logs LDR，且不依賴任何個別蛋白的表達穩定性。Hagstrom et al. 2025 (PLOS ONE) 直接比較 GAPDH/β-actin/vinculin 與 TPN 於人類脂肪細胞，發現 TPN 顯著降低樣本間 CV 並改變部分 target 的顯著性判讀。Aldridge 2008、Romero-Calvo 2010、Gürtler 2013、Taylor 2013 為 TPN 的奠基方法學。實作要點：(a) 將 sample loading 控制在 LDR 內；(b) 報告 TPN 影像 (整條 lane 訊號) 為 figure supplement；(c) 抗體驗證 (Pillai-Kastoori 2020) 仍不可省。</p>
+<p data-lang="en">A single housekeeping band (β-actin, GAPDH, α-tubulin) as loading control has been shown across multiple studies to vary in disease samples, drug treatments and developmental stages, and its linear dynamic range (LDR) is typically &lt; 2 logs. Total Protein Normalization (TPN) — staining the entire membrane with Stain-Free, Ponceau S or REVERT/SYPRO Ruby — gives ~3 logs LDR and does not depend on the expression stability of any single protein. Hagstrom et al. 2025 (PLOS ONE) directly compared GAPDH/β-actin/vinculin vs TPN in human adipocytes and found TPN significantly reduced between-sample CV and changed the significance call for several targets. Aldridge 2008, Romero-Calvo 2010, Gürtler 2013 and Taylor 2013 are the foundational TPN methodology papers. Practical points: (a) keep sample loading within the LDR; (b) report the TPN image (whole-lane signal) as a figure supplement; (c) antibody validation (Pillai-Kastoori 2020) is still required.</p>
+</div>
+
+<div class="errata">
+<h4>E3 · ELISA — 5-PL vs 4-PL (Findlay & Dillard 2007, AAPS J)</h4>
+<p data-lang="zh">4-PL (four-parameter logistic) 是 ligand-binding assays 的標準 calibration curve，但其前提是曲線「對稱」(symmetric around the inflection point)。對許多 immunoassays — 尤其 sandwich ELISA 在 high-dose hook、low-end matrix effect 等情況 — 曲線實際上是 asymmetric，此時 5-PL (added asymmetry parameter g) 可顯著改善 back-calculation 準確度。Gottschalk & Dunn 2005 (Anal Biochem) 提供 5-PL 的特徵化，Findlay & Dillard 2007 (AAPS J) 提供模型選擇準則：以 AIC + 標準曲線 weighted residuals plot 判斷是否需要 5-PL。Armbruster & Pry 2008 提供 LOB/LOD/LOQ 的標準定義。FDA Bioanalytical Method Validation Guidance 2018 為法規層面權威依據。錯誤示警：直接用 linear regression 跨越 4 logs 動態範圍是常見錯誤，殘差呈非隨機 U 形時即需改用 4-PL/5-PL。</p>
+<p data-lang="en">4-PL (four-parameter logistic) is the standard calibration curve for ligand-binding assays, but it assumes the curve is symmetric around the inflection point. For many immunoassays — especially sandwich ELISA with high-dose hook or low-end matrix effects — the curve is asymmetric, and 5-PL (an added asymmetry parameter g) significantly improves back-calculation accuracy. Gottschalk & Dunn 2005 (Anal Biochem) characterize 5-PL; Findlay & Dillard 2007 (AAPS J) give model-selection criteria — use AIC plus a weighted-residuals plot of the standard curve to decide whether 5-PL is needed. Armbruster & Pry 2008 provide standard definitions of LOB/LOD/LOQ. The FDA Bioanalytical Method Validation Guidance 2018 is the regulatory authority. Common pitfall: forcing a linear regression across 4 logs of dynamic range is a frequent mistake — when residuals show a non-random U-shape, switch to 4-PL/5-PL.</p>
+</div>
+
+<div class="errata">
+<h4>E4 · Flow Cytometry — Compensation vs Spectral Unmixing</h4>
+<p data-lang="zh">Conventional flow cytometry 使用 compensation matrix (Roederer 2001, Cytometry) 處理 fluorochrome 之間的 spectral spillover：以 single-stained controls 估計 spillover coefficients，從每個 detector 線性減去其他 channel 的貢獻。此方法假設 spectrum 為 delta 函數 — 只看一個 peak detector。Spectral cytometry (Bonilla 2025, Cells PMC12193525) 則記錄整個 emission spectrum (32-64 detectors)，以最小平方法或非負矩陣分解進行 unmixing。優勢：(1) 處理高度重疊的 fluorochromes (e.g., BB515 + FITC)；(2) 區分 autofluorescence 為一個獨立 "fluorochrome"；(3) 大幅擴增 panel 維度 (40+ 顏色)。注意：spectral unmixing 並非「免 compensation 的魔法」— 仍需 single-stained controls + autofluorescence control，且 unmixing error 會放大為 negative values。Cossarizza 2021 (Eur J Immunol, 3rd ed) 為實作 standard。MIFlowCyt (Lee 2008) + MIFlowCyt-EV (Welsh 2020) 為 reporting guideline。</p>
+<p data-lang="en">Conventional flow cytometry uses a compensation matrix (Roederer 2001, Cytometry) to handle spectral spillover between fluorochromes: spillover coefficients are estimated from single-stained controls and subtracted linearly from each detector. This assumes spectra are delta functions — only the peak detector is used. Spectral cytometry (Bonilla 2025, Cells PMC12193525) records the entire emission spectrum across 32-64 detectors and performs unmixing via least-squares or non-negative matrix factorization. Advantages: (1) handles highly overlapping fluorochromes (e.g., BB515 + FITC); (2) treats autofluorescence as a separate "fluorochrome"; (3) dramatically expands panel dimensionality (40+ colors). Caveat: spectral unmixing is not "compensation-free magic" — single-stained + autofluorescence controls are still required, and unmixing error is amplified into negative values. Cossarizza 2021 (Eur J Immunol, 3rd ed) is the implementation standard; MIFlowCyt (Lee 2008) + MIFlowCyt-EV (Welsh 2020) provide the reporting guidelines.</p>
+</div>
+
+<div class="errata">
+<h4>E5 · Tukey 1977 — EDA Fences vs MAD-based Outlier Detection</h4>
+<p data-lang="zh">Tukey 的 boxplot fences (Q1 − 1.5·IQR, Q3 + 1.5·IQR; Tukey 1977 EDA) 是視覺化 outlier 的標準工具，但其數學依據是「在常態分布下，約 0.7% 的資料會落於 fence 外」。當資料 (a) 嚴重偏態 (e.g., qPCR Ct、cytokine concentration)、(b) 樣本數 &lt; 30、(c) 真實存在 mixture model 時，Tukey fences 會誤判過多 outliers 或漏抓 outliers。Leys et al. 2013 (J Exp Soc Psychol) 推薦改用 MAD (median absolute deviation) 為基準：outlier 條件為 |x − median| &gt; k · MAD (k=2.5 為 conservative, k=3 為 very conservative)。MAD 對 50% 污染仍 robust，遠優於 mean ± n·SD (breakdown point = 0)。實作：R `mad()` 預設帶 consistency constant 1.4826；Python `scipy.stats.median_abs_deviation(scale='normal')`。Knief & Forstmeier 2025 (R Soc Open Sci) 指出回歸殘差的常態性測試本身就受 outlier 干擾，建議改看 QQ-plot + Cook's distance 而非 Shapiro-Wilk on residuals。</p>
+<p data-lang="en">Tukey's boxplot fences (Q1 − 1.5·IQR, Q3 + 1.5·IQR; Tukey 1977 EDA) are the standard visualization tool for outliers, but their basis is that under a normal distribution about 0.7% of data falls outside the fence. When data are (a) heavily skewed (e.g., qPCR Ct, cytokine concentrations), (b) sample size &lt; 30, or (c) a true mixture model, Tukey fences over- or under-call outliers. Leys et al. 2013 (J Exp Soc Psychol) recommend MAD (median absolute deviation) instead: an outlier is |x − median| &gt; k · MAD (k=2.5 conservative, k=3 very conservative). MAD remains robust under 50% contamination, far better than mean ± n·SD (breakdown point = 0). Implementation: R `mad()` includes a consistency constant of 1.4826 by default; Python uses `scipy.stats.median_abs_deviation(scale='normal')`. Knief & Forstmeier 2025 (R Soc Open Sci) further note that normality tests on regression residuals are themselves perturbed by outliers — prefer QQ plots + Cook's distance over Shapiro-Wilk on residuals.</p>
+</div>
+
+<div class="errata">
+<h4>E6 · ASA 2016/2019 — Beyond "p &lt; 0.05"</h4>
+<p data-lang="zh">Wasserstein & Lazar 2016 (Am Stat 70(2):129) 為 American Statistical Association 史上首份對 p-value 的官方 statement，列出六大原則：(1) p-value 衡量資料與某模型的不相容程度，不衡量該假說為真的機率；(2) p-value 不衡量效應大小或結果的重要性；(3) 不應僅以 p &lt; 0.05 作為科學結論的依據；(4) 完整 reporting 需含 effect size、CI、prior 資訊；(5) p-value 不衡量 hypothesis 的證據力；(6) 在 NHST 之外存在多種互補方法 (Bayesian、likelihood、equivalence testing)。2019 年的後續 (Am Stat 73(sup1):1) 主張 "moving to a world beyond p &lt; 0.05"，呼籲 (i) 廢除 "statistically significant" 這個二分標籤、(ii) 整合 ATOM 框架 (Accept uncertainty, be Thoughtful/Open/Modest)。Greenland 2016 (Eur J Epidemiol) 補充 25 個常見的 p-value 誤解。實作：在論文中報告 effect size + 95% CI + exact p-value (不要寫 "p &lt; 0.05" 或 "n.s.")；用 figure 呈現 raw data + group-level estimate (Weissgerber 2015)。</p>
+<p data-lang="en">Wasserstein & Lazar 2016 (Am Stat 70(2):129) is the American Statistical Association's first-ever official statement on p-values. Six principles: (1) a p-value measures incompatibility between data and a model, not the probability that the hypothesis is true; (2) p-values do not measure effect size or importance; (3) scientific conclusions should not be based on whether p &lt; 0.05; (4) complete reporting requires effect size, CI and prior information; (5) p-values do not measure the strength of evidence; (6) Bayesian, likelihood and equivalence-testing alternatives complement NHST. The 2019 follow-up (Am Stat 73(sup1):1) calls for "moving to a world beyond p &lt; 0.05" — (i) abandon the "statistically significant" dichotomy; (ii) adopt the ATOM framework (Accept uncertainty, be Thoughtful/Open/Modest). Greenland 2016 (Eur J Epidemiol) catalogs 25 common p-value misinterpretations. Practice: report effect size + 95% CI + exact p-value (avoid "p &lt; 0.05" or "n.s."); show raw data + group-level estimates in figures (Weissgerber 2015).</p>
+</div>
+
+<div class="errata">
+<h4>E7 · BH-FDR vs Bonferroni — When to Use Which</h4>
+<p data-lang="zh">Bonferroni 校正 (α/m) 控制 FWER (family-wise error rate)，即「至少一個 false positive」的機率 ≤ α。其代價：當 m 很大 (genomics 中 m = 10⁴ ~ 10⁶) 時 power 趨近於 0。Benjamini-Hochberg 1995 (JRSS B 57(1):289) 改為控制 FDR (false discovery rate, E[V/R])，即「被宣告為 discovery 的結果中，預期 false positive 比例」≤ q。FDR 在大尺度檢定 (microarray、RNA-seq、ChIP-seq、GWAS) 中成為標準。決策樹：(a) m &lt; 20 且每個假設都關鍵 (e.g., 多重 endpoint clinical trial) → Bonferroni or Holm；(b) m &gt; 100 且可容忍少量 false positives → BH-FDR；(c) 已知 p-value 並非 independent (e.g., LD 中的 SNPs) → BY (Benjamini-Yekutieli) or permutation-based。Storey & Tibshirani 2003 (PNAS) 提出 q-value (local FDR) 取代 BH 的 step-up，可估計每筆檢定的 FDR。Liu 2024 (Bioinformatics 40(2):btae035) 提出 2dGBH，針對 grouped/structured hypotheses (e.g., gene × tissue) 提供 power-adaptive FDR 控制。注意：BH 假設 p-value 在 H₀ 下為 uniform — 對於 discrete tests (Fisher exact) 需特殊處理。</p>
+<p data-lang="en">Bonferroni (α/m) controls the family-wise error rate (FWER) — the probability of "at least one false positive" ≤ α. Cost: when m is large (10⁴–10⁶ in genomics), power approaches 0. Benjamini-Hochberg 1995 (JRSS B 57(1):289) instead controls the false discovery rate (FDR, E[V/R]) — the expected proportion of false positives among declared discoveries ≤ q. FDR is the standard for large-scale testing (microarray, RNA-seq, ChIP-seq, GWAS). Decision tree: (a) m &lt; 20 with every hypothesis critical (e.g., multi-endpoint clinical trial) → Bonferroni or Holm; (b) m &gt; 100 with some false positives tolerable → BH-FDR; (c) p-values known to be dependent (e.g., LD-linked SNPs) → BY (Benjamini-Yekutieli) or permutation-based. Storey & Tibshirani 2003 (PNAS) introduced the q-value (local FDR) as a per-test FDR estimate replacing BH step-up. Liu 2024 (Bioinformatics 40(2):btae035) proposes 2dGBH, a power-adaptive FDR procedure for grouped/structured hypotheses (e.g., gene × tissue). Note: BH assumes p-values are uniform under H₀ — discrete tests (Fisher exact) need special handling.</p>
+</div>
+
+<div class="errata">
+<h4>E8 · Post-hoc Power Myth (Hoenig & Heisey 2001, Am Stat)</h4>
+<p data-lang="zh">「我的 t-test p = 0.08 (非顯著)，所以 post-hoc 計算 power = 0.45，可見研究 underpowered」— 這是統計學上最普遍但最錯誤的推論。Hoenig & Heisey 2001 (Am Stat 55:19) 證明：post-hoc power 是 observed effect size 的單調函數，與 p-value 是「一個硬幣的兩面」(p-value 高 ⇔ observed power 低)。重複計算 observed power 不會提供新資訊，更不能用來解釋為何沒有達到顯著。正確做法：(1) 在實驗 *之前* 以 minimum effect size of interest (SESOI) 進行 a priori power analysis (Cohen 1988, Faul 2007 G*Power)；(2) 實驗 *之後* 報告 effect size + 95% CI，CI 寬度即「實驗的 informativeness」；(3) 若 CI 包含 SESOI 與 null，結論為 "inconclusive"，不是 "no effect"；(4) 若需 formal equivalence test，用 TOST (two one-sided tests) 而非 post-hoc power。Giner-Sorolla 2024 (Pers Soc Psychol Rev) 提供 SESOI 的選擇框架。Goodman & Berlin 1994 為此議題的奠基論文。</p>
+<p data-lang="en">"My t-test p = 0.08 (non-significant), so post-hoc power = 0.45, therefore my study is underpowered" — this is the most common but most incorrect inference in statistics. Hoenig & Heisey 2001 (Am Stat 55:19) prove that post-hoc power is a monotonic function of the observed effect size and is essentially "the other side of the p-value" (high p ⇔ low observed power). Recomputing observed power gives no new information and cannot explain why significance was not reached. Correct approach: (1) before the experiment, run a-priori power analysis with a minimum effect size of interest (SESOI; Cohen 1988, Faul 2007 G*Power); (2) after the experiment, report effect size + 95% CI — the CI width is the "informativeness" of the study; (3) if the CI contains both SESOI and null, conclude "inconclusive", not "no effect"; (4) for formal equivalence testing, use TOST (two one-sided tests), not post-hoc power. Giner-Sorolla 2024 (Pers Soc Psychol Rev) provides a framework for choosing SESOI. Goodman & Berlin 1994 is the foundational paper.</p>
+</div>
+
+<div class="errata">
+<h4>E9 · Cohen's d vs Hedges' g — Small-sample Bias</h4>
+<p data-lang="zh">Cohen's d = (M₁ − M₂) / s_pooled 是兩組效應量的標準度量。其估計在小樣本 (n &lt; 20 per group) 下會 *系統性高估* 真實效應量，bias 約為 1 + 3/(4·df − 1)。Hedges 1981 (J Educ Stat 6(2):107) 提出 small-sample correction factor J(df) = 1 − 3/(4·df − 1)，定義 Hedges' g = J(df) · d。在 df → ∞ 時 g → d；在 df = 10 時 g ≈ 0.923 · d。Cohen 1988 (Statistical Power Analysis 2nd ed) 提供經典 thresholds：d = 0.2 small, 0.5 medium, 0.8 large — 但這只是 "in the absence of other information" 的 default，每個學科應建立自己的 SESOI。對於 within-subject design (paired)，應使用 dz 或 drm；對於 ANOVA，應改用 η² / η_p² / ω²。R: `effsize::cohen.d(hedges.correction=TRUE)`；Python: `pingouin.compute_effsize(eftype='hedges')`。Lakens 2013 (Front Psychol) 為實作 review。</p>
+<p data-lang="en">Cohen's d = (M₁ − M₂) / s_pooled is the standard effect size for two-group comparisons. Its estimator systematically *overestimates* the true effect in small samples (n &lt; 20 per group), with bias ≈ 1 + 3/(4·df − 1). Hedges 1981 (J Educ Stat 6(2):107) proposed a small-sample correction J(df) = 1 − 3/(4·df − 1), defining Hedges' g = J(df) · d. As df → ∞, g → d; at df = 10, g ≈ 0.923 · d. Cohen 1988 (Statistical Power Analysis 2nd ed) gives the classic thresholds d = 0.2 small / 0.5 medium / 0.8 large — but these are defaults "in the absence of other information" and each field should establish its own SESOI. For within-subject (paired) designs, use dz or drm; for ANOVA, η² / η_p² / ω². R: `effsize::cohen.d(hedges.correction=TRUE)`; Python: `pingouin.compute_effsize(eftype='hedges')`. Lakens 2013 (Front Psychol) is the implementation review.</p>
+</div>
+
+<div class="errata">
+<h4>E10 · TPM Is Not for DE (Wagner et al. 2012)</h4>
+<p data-lang="zh">TPM (transcripts per million) 與 RPKM/FPKM 都對「樣本內」的 sequencing depth 進行了標準化，但 *並未* 對「樣本間」的 RNA composition 差異做校正。Wagner et al. 2012 (Theory Biosci) 指出 RPKM 在跨樣本比較時 inconsistent — 因為 RPKM 的分母 (library size in millions) 隨著 *highly expressed gene 的存在與否* 而改變。同樣的，TPM 雖然滿足「各 gene TPM 加總 = 10⁶」的 invariant，仍受 composition bias 影響：當少數高表現 gene (e.g., globin、rRNA contamination) 變動時，所有 gene 的 TPM 都被「擠壓」。正確做法：DE analysis 使用 raw counts + DESeq2 median-of-ratios (Love 2014, Genome Biol)、edgeR TMM (Robinson 2010, Bioinformatics) 或 limma-voom (Law 2014, Genome Biol)，這些方法都採 size factor 估計來校正 composition bias。MaxLFQ (Cox 2014, MCP) 為 label-free proteomics 的對應概念。TPM/FPKM 適合：(a) 視覺化單一 gene 跨樣本的 expression；(b) 不同 gene 之間的相對表達。不適合：(c) 不同 sample 之間的差異表達檢定。apeglm (Zhu 2018) 為 log2FC shrinkage 標準。</p>
+<p data-lang="en">TPM (transcripts per million) and RPKM/FPKM normalize within-sample sequencing depth but *do not* correct between-sample RNA composition differences. Wagner et al. 2012 (Theory Biosci) showed RPKM is inconsistent across samples because the denominator (library size in millions) changes with the *presence or absence of highly expressed genes*. Likewise, even though TPM satisfies the invariant "sum of all TPMs = 10⁶", it is still affected by composition bias: when a few highly-expressed genes (e.g., globin, rRNA contamination) shift, every gene's TPM is "squeezed". Correct approach: do DE analysis on raw counts with DESeq2 median-of-ratios (Love 2014, Genome Biol), edgeR TMM (Robinson 2010, Bioinformatics) or limma-voom (Law 2014, Genome Biol) — all estimate size factors to correct composition bias. MaxLFQ (Cox 2014, MCP) is the equivalent for label-free proteomics. TPM/FPKM is suitable for: (a) visualizing a single gene across samples; (b) relative expression between genes. Not suitable for: (c) DE testing between samples. apeglm (Zhu 2018) is the standard for log2FC shrinkage.</p>
+</div>
+
+<div class="errata">
+<h4>E11 · Weissgerber 2015 — Bar Plot Critique</h4>
+<p data-lang="zh">Weissgerber et al. 2015 (PLOS Biol) 分析了三本頂級生理學期刊上百篇論文中的 bar plot，指出當 n 較小時 (常見於 wet lab，n = 3-10)，同一個 mean ± SEM 的 bar 可能來自完全不同的資料分布 — uniform、bimodal、含 outliers 都會產生相似的 summary。這導致讀者無法判斷：(a) 真實的 sample size、(b) 個別資料點分布、(c) 變異來源。建議替代圖：(i) dot plot / strip plot 直接顯示每個資料點；(ii) box plot 顯示 median + IQR；(iii) violin plot 顯示 density；(iv) Lord et al. 2020 (J Cell Biol) 提出 SuperPlot — 對 cell biology 的 nested data (每個 biological replicate 內含多個 technical replicates)，以兩層 dot plot 同時呈現「每細胞」與「每樣本」的 variability，並以後者進行統計檢定 (避免 pseudoreplication)。實作：ggplot2 `geom_jitter() + stat_summary()`；seaborn `stripplot()` / `swarmplot()` + `pointplot()`。Lex et al. 2014 (UpSet, TVCG) 為 multi-set Venn 的替代。color: viridis / Okabe-Ito 為 colorblind-safe palettes (Wilke 2019)。</p>
+<p data-lang="en">Weissgerber et al. 2015 (PLOS Biol) analyzed bar plots in hundreds of papers across top physiology journals and showed that, at small n (common in wet-lab work, n = 3-10), the same mean ± SEM bar can come from very different distributions — uniform, bimodal or outlier-laden samples all produce similar summaries. Readers therefore cannot judge: (a) the actual sample size, (b) the distribution of individual data points, or (c) the source of variation. Recommended alternatives: (i) dot plot / strip plot to show every data point; (ii) box plot showing median + IQR; (iii) violin plot showing density; (iv) Lord et al. 2020 (J Cell Biol) introduced SuperPlot — for nested cell-biology data (each biological replicate containing many technical replicates), a two-layer dot plot simultaneously displays per-cell and per-sample variability, with statistics run on the latter (avoiding pseudoreplication). Implementation: ggplot2 `geom_jitter() + stat_summary()`; seaborn `stripplot()` / `swarmplot()` + `pointplot()`. Lex et al. 2014 (UpSet, TVCG) is the multi-set Venn alternative. Color: viridis / Okabe-Ito are colorblind-safe palettes (Wilke 2019).</p>
+</div>
+
+<div class="errata">
+<h4>E12 · MIQE / ARRIVE / CONSORT — Scope Distinction</h4>
+<p data-lang="zh">三大 reporting guideline 各有領域，不可混用：(1) MIQE (Bustin 2009/2025, Clin Chem) — qPCR / RT-qPCR 實驗的最低資訊清單；dMIQE 2020 為 digital PCR 對應版本。(2) ARRIVE 2.0 (Percie du Sert 2020, PLOS Biol) — *動物實驗* 報告規範 (10 項 essential + recommended)；強調 randomization、blinding、sample size justification 與 attrition。(3) CONSORT 2010 (Schulz 2010, BMJ) — *人類隨機對照試驗* 報告規範；含 trial flow diagram、primary/secondary outcomes、ITT vs per-protocol。其他相關：(a) STARD (診斷準確性研究)、(b) STROBE (觀察性流行病學)、(c) PRISMA (systematic review/meta-analysis)、(d) CARE (case reports)、(e) TRIPOD+AI (Collins 2024) 與 STARD-AI (Salim 2025) 為 AI/ML 模型的延伸版本。EQUATOR Network (equator-network.org) 為所有 health research reporting guidelines 的官方 portal。實作：選對 guideline + 完整 checklist 於 supplementary 提供；許多期刊已將其列為 mandatory submission requirement。</p>
+<p data-lang="en">The three major reporting guidelines have distinct scopes and must not be conflated: (1) MIQE (Bustin 2009/2025, Clin Chem) — minimum information for qPCR / RT-qPCR; dMIQE 2020 is the digital PCR analog. (2) ARRIVE 2.0 (Percie du Sert 2020, PLOS Biol) — *animal-experiment* reporting (10 essential + recommended items); emphasizes randomization, blinding, sample-size justification and attrition. (3) CONSORT 2010 (Schulz 2010, BMJ) — *human randomized controlled trials*; includes trial flow diagram, primary/secondary outcomes, ITT vs per-protocol. Related: (a) STARD (diagnostic accuracy), (b) STROBE (observational epidemiology), (c) PRISMA (systematic review / meta-analysis), (d) CARE (case reports), (e) TRIPOD+AI (Collins 2024) and STARD-AI (Salim 2025) are AI/ML extensions. EQUATOR Network (equator-network.org) is the official portal for all health-research reporting guidelines. Practice: choose the right guideline, provide a complete checklist as supplementary material — many journals now make this mandatory at submission.</p>
+</div>
+
+<div class="errata">
+<h4>E13 · TRIPOD+AI 2024 Supersedes TRIPOD 2015</h4>
+<p data-lang="zh">TRIPOD 2015 (Collins, Reitsma, Altman, Moons; BMJ 2015) 為 *clinical prediction model* (regression-based) 的報告規範，含 22 個 checklist items 涵蓋 model development 與 external validation。TRIPOD+AI (Collins et al. 2024, BMJ;  10.1136/bmj-2023-078378) 為其 AI/ML 延伸版本，從 22 擴增為 27 items，新增重點：(1) AI/ML 演算法的明確 specification (architecture、hyperparameters、software version)；(2) data leakage 預防 (training/validation/test 嚴格分割，避免 patient-level leakage)；(3) interpretability/explainability (SHAP、LIME、attention maps)；(4) fairness assessment (subgroup performance、algorithmic bias)；(5) calibration 必須報告 (不僅 discrimination/AUC; Van Calster 2019)。STARD-AI (Salim 2025, Nat Med) 為 *diagnostic accuracy studies* 用 AI 的對應版本；CLAIM (Mongan 2020, Radiol AI) 為 medical imaging 的 checklist。實作建議：論文投稿前完成 TRIPOD+AI checklist + 公開 code/model weights (若可)；Lundberg 2017 (NeurIPS, SHAP) + Saito 2015 (PLOS ONE, PR vs ROC) 為 imbalanced classification 的標準參考。注意 — TRIPOD+AI 並非廢除 TRIPOD 2015，而是補充：純粹 regression-based prediction model 仍可用 TRIPOD 2015，但 ML 元素 (random forest、XGBoost、neural net) 必須改用 TRIPOD+AI。</p>
+<p data-lang="en">TRIPOD 2015 (Collins, Reitsma, Altman, Moons; BMJ 2015) is the reporting guideline for *clinical prediction models* (regression-based), with 22 checklist items covering model development and external validation. TRIPOD+AI (Collins et al. 2024, BMJ; 10.1136/bmj-2023-078378) is its AI/ML extension, expanded from 22 to 27 items. Key additions: (1) explicit specification of AI/ML algorithms (architecture, hyperparameters, software version); (2) data-leakage prevention (strict train/validation/test split, no patient-level leakage); (3) interpretability/explainability (SHAP, LIME, attention maps); (4) fairness assessment (subgroup performance, algorithmic bias); (5) calibration must be reported (not just discrimination/AUC; Van Calster 2019). STARD-AI (Salim 2025, Nat Med) is the AI extension for *diagnostic accuracy studies*; CLAIM (Mongan 2020, Radiol AI) is the medical-imaging checklist. Practice: complete the TRIPOD+AI checklist before submission and release code / model weights when possible; Lundberg 2017 (NeurIPS, SHAP) + Saito 2015 (PLOS ONE, PR vs ROC) are standard references for imbalanced classification. Note — TRIPOD+AI does not retire TRIPOD 2015; it supplements it. Pure regression-based prediction models can still use TRIPOD 2015, but ML elements (random forest, XGBoost, neural net) require TRIPOD+AI.</p>
+</div>
+
+</section>
+<nav class="page-nav">
+  <a href="../index.html"><span class="nav-dir" data-zh="← 教學首頁" data-en="← Tutorial home">← 教學首頁</span><span class="nav-title" data-zh="回到主教學頁" data-en="Back to tutorial hub">回到主教學頁</span></a>
+  <a href="../qda-quiz/index.html" target="_blank" rel="noopener"><span class="nav-dir" data-zh="互動考題 →" data-en="Interactive quiz →">互動考題 →</span><span class="nav-title" data-zh="互動式考題" data-en="Interactive Quiz">互動式考題</span></a>
+</nav>
+
+</main>
+<script src="../i18n.js"></script>
+</body>
+</html>

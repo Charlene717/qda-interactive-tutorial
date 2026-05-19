@@ -1,0 +1,181 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 3: ELISA &amp; Standard Curves — QDA</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li><li><a href="western-blot.html">WB</a></li><li><a href="elisa.html" class="active">ELISA</a></li><li><a href="flow-cytometry.html">Flow</a></li><li><a href="image-quant.html">Image</a></li><li><a href="eda.html">EDA</a></li><li><a href="hypothesis-testing.html">Tests</a></li><li><a href="multiple-testing.html">MTC</a></li><li><a href="regression.html">Regr.</a></li><li><a href="effect-size.html">ES/Power</a></li><li><a href="omics-quant.html">Omics</a></li><li><a href="visualization.html">Viz</a></li><li><a href="reproducibility.html">Repro.</a></li><li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 3 / 14</div>
+<h1 data-zh="ELISA 與標準曲線" data-en="ELISA &amp; Standard Curves">ELISA 與標準曲線</h1>
+<p class="subtitle" data-lang="zh">4-PL / 5-PL 擬合、LOD/LOQ、parallelism——讓濃度數字真正可信。</p>
+<p class="subtitle" data-lang="en">4-PL / 5-PL fitting, LOD/LOQ, parallelism — making the concentration numbers trustworthy.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="為什麼 OD 不能直接報告？" data-en="Why you can't just report OD">為什麼 OD 不能直接報告？</h2>
+<div data-lang="zh"><p>抗原—抗體結合是「飽和反應」，劑量反應呈 sigmoidal（S 形）而非線性。把 OD 拿去算濃度，必須先以標準品擬合曲線。Findlay & Dillard (2007) 與 FDA Bioanalytical Method Validation Guidance (2018) 都把 <strong>4-PL（四參數對數）</strong>列為配體結合分析的預設方法；競爭型與 multiplex ELISA 因曲線不對稱，須改用 <strong>5-PL</strong>（多一個 asymmetry 參數 g）。</p>
+<p>2023-2024 年 YCharOS / eLife 研究指出 50% 以上市售抗體在至少一種應用上失敗，因此抗體驗證（KO/KD 對照）已是審稿必問題。</p></div>
+<div data-lang="en"><p>Antigen–antibody binding saturates, so dose-response is sigmoidal, not linear. To convert OD to concentration you must fit a calibration curve. Findlay & Dillard (2007) and FDA Bioanalytical Guidance (2018) both set the <strong>4-PL (four-parameter logistic)</strong> as the default for ligand-binding assays; asymmetric (competitive / multiplex) curves need <strong>5-PL</strong> (extra asymmetry parameter g).</p>
+<p>YCharOS / eLife studies in 2023-2024 show that &gt;50% of commercial antibodies fail in at least one application — so antibody validation (KO / KD controls) is now a standard reviewer question.</p></div>
+<div class="callout tip"><span class="callout-icon">💡</span><div><span data-lang="zh"><strong>核心原則：</strong>樣品濃度必須落在曲線的<strong>線性中段</strong>（通常 ED20–ED80）。若 OD 高於最高標準品或低於最低標準品，需稀釋或濃縮重測，絕不外插。</span><span data-lang="en"><strong>Core principle:</strong> Sample concentrations must fall within the <strong>linear mid-portion</strong> of the curve (typically ED20–ED80). If OD exceeds the highest or falls below the lowest standard, dilute or concentrate and re-run — never extrapolate.</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心概念" data-en="CORE CONCEPTS">核心概念</div>
+<h2 data-zh="一、四參數 (4-PL) 公式" data-en="I. The 4-PL equation">一、四參數 (4-PL) 公式</h2>
+<div data-lang="zh"><p>4-PL：<code>Y = D + (A − D) / (1 + (X/C)^B)</code>，其中 <strong>A</strong> 為下平台、<strong>D</strong> 為上平台、<strong>C</strong> 為 EC50/IC50、<strong>B</strong> 為 Hill slope。5-PL 額外引入不對稱參數 <strong>g</strong>。</p></div>
+<div data-lang="en"><p>4-PL: <code>Y = D + (A − D) / (1 + (X/C)^B)</code> where <strong>A</strong> = lower asymptote, <strong>D</strong> = upper asymptote, <strong>C</strong> = EC50/IC50, <strong>B</strong> = Hill slope. 5-PL adds an asymmetry parameter <strong>g</strong>.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">⏬</div><h4>LOD</h4><div data-lang="zh"><p>= blank mean + 3·SD<br>能可靠偵測但不一定能定量的最低濃度。</p></div><div data-lang="en"><p>= blank mean + 3·SD<br>Lowest concentration reliably detected (not necessarily quantified).</p></div></div>
+<div class="card"><div class="card-icon">📏</div><h4>LOQ</h4><div data-lang="zh"><p>= blank mean + 10·SD（且 CV ≤ 20%）<br>能可靠定量的最低濃度。</p></div><div data-lang="en"><p>= blank mean + 10·SD (with CV ≤ 20%)<br>Lowest concentration reliably quantified.</p></div></div>
+<div class="card"><div class="card-icon">🎯</div><h4>Parallelism</h4><div data-lang="zh"><p>樣品序列稀釋曲線需與標準曲線平行（F-test 或 RSSE）；非平行 = matrix effect 或抗體交叉反應。</p></div><div data-lang="en"><p>Sample dilution curve must run parallel to the standard curve (F-test or RSSE); non-parallelism = matrix effects or antibody cross-reactivity.</p></div></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="4-PL 標準曲線擬合器" data-en="4-PL standard curve fitter">4-PL 標準曲線擬合器</h2>
+<div data-lang="zh"><p>調整四個參數，觀察曲線形狀。<strong>綠色區段</strong>是可定量範圍 (ED20-ED80)，橘色為樣品 OD，計算對應濃度。</p></div>
+<div data-lang="en"><p>Tune the four parameters and watch the curve. <strong>Green region</strong> = quantifiable range (ED20-ED80); orange line shows your sample OD and back-calculated concentration.</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span>EC50 (pg/mL)</span><span id="valEC50">100</span></label><input type="range" id="sliderEC50" min="10" max="1000" value="100" step="10"></div>
+<div class="slider-group"><label><span>Hill slope (B)</span><span id="valB">1.0</span></label><input type="range" id="sliderB" min="0.5" max="3" value="1" step="0.1"></div>
+<div class="slider-group"><label><span data-zh="樣品 OD" data-en="Sample OD">樣品 OD</span><span id="valOD">1.0</span></label><input type="range" id="sliderOD" min="0.1" max="2.8" value="1" step="0.05"></div>
+<div class="sim-stats"><span class="sim-stat pass" id="statConc">—</span><span class="sim-stat fail" id="statWarn">—</span></div>
+<div class="chart-container"><canvas id="elisaChart"></canvas></div>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center;">X：log10(concentration pg/mL) | Y：OD</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="二、R 與 Python 擬合 4-PL" data-en="II. Fitting 4-PL in R &amp; Python">二、R 與 Python 擬合 4-PL</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" data-tab="r3">R</button><button class="code-tab-btn" data-tab="py3">Python</button></div>
+<div class="code-tab-content active" id="r3"><pre><span class="comment"># R: drc 套件 — Ritz 2015 PLOS ONE</span>
+<span class="kw">library</span>(drc)
+std &lt;- <span class="func">read.csv</span>(<span class="str">"std.csv"</span>)        <span class="comment"># conc, OD</span>
+fit &lt;- <span class="func">drm</span>(OD ~ conc, data=std, fct=<span class="func">LL.4</span>(names=<span class="func">c</span>(<span class="str">"B"</span>,<span class="str">"A"</span>,<span class="str">"D"</span>,<span class="str">"C"</span>)))
+<span class="func">summary</span>(fit)
+<span class="func">plot</span>(fit, log=<span class="str">"x"</span>, type=<span class="str">"all"</span>)
+<span class="comment"># 反算未知樣品濃度</span>
+unk &lt;- <span class="func">read.csv</span>(<span class="str">"samples.csv"</span>)   <span class="comment"># OD</span>
+conc &lt;- <span class="func">ED</span>(fit, respLev=unk$OD, type=<span class="str">"absolute"</span>, interval=<span class="str">"delta"</span>)
+</pre></div>
+<div class="code-tab-content" id="py3"><pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">from</span> scipy.optimize <span class="kw">import</span> curve_fit
+
+<span class="kw">def</span> <span class="func">four_pl</span>(x, A, B, C, D):
+    <span class="kw">return</span> D + (A - D) / (<span class="num">1</span> + (x/C)**B)
+
+std_conc = np.<span class="func">array</span>([<span class="num">3.9</span>,<span class="num">7.8</span>,<span class="num">15.6</span>,<span class="num">31.25</span>,<span class="num">62.5</span>,<span class="num">125</span>,<span class="num">250</span>,<span class="num">500</span>])
+std_od   = np.<span class="func">array</span>([<span class="num">0.08</span>,<span class="num">0.12</span>,<span class="num">0.22</span>,<span class="num">0.45</span>,<span class="num">0.91</span>,<span class="num">1.55</span>,<span class="num">2.10</span>,<span class="num">2.40</span>])
+popt,_ = <span class="func">curve_fit</span>(four_pl, std_conc, std_od, p0=[<span class="num">0.05</span>,<span class="num">1</span>,<span class="num">100</span>,<span class="num">2.5</span>])
+
+<span class="comment"># 反推：給 OD 解出 conc</span>
+<span class="kw">def</span> <span class="func">inverse_4pl</span>(y, A, B, C, D):
+    <span class="kw">return</span> C * ((A - D)/(y - D) - <span class="num">1</span>) ** (<span class="num">1</span>/B)
+
+unk_od = np.<span class="func">array</span>([<span class="num">0.4</span>, <span class="num">1.2</span>, <span class="num">2.0</span>])
+print(<span class="func">inverse_4pl</span>(unk_od, *popt))
+</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="決策樹" data-en="DECISION TREE">決策樹</div>
+<h2 data-zh="三、4-PL vs 5-PL vs 線性" data-en="III. 4-PL vs 5-PL vs linear">三、何時用哪一種擬合？</h2>
+<div class="decision-tree">
+<div class="dt-node"><span class="dt-q">Q1.</span><span class="dt-arrow">→</span><span data-zh="<strong>標準品橫跨幾個 log？</strong>" data-en="<strong>How many logs does the standard cover?</strong>"></span></div>
+<div class="dt-node"><span class="dt-q">&lt;1</span><span class="dt-arrow">→</span><span data-zh="窄範圍：線性回歸 (log-log) 即可" data-en="Narrow range: linear regression (log-log) suffices"></span></div>
+<div class="dt-node"><span class="dt-q">3-4</span><span class="dt-arrow">→</span><span data-zh="4-PL（對稱 S 曲線）" data-en="4-PL (symmetric S-curve)"></span></div>
+<div class="dt-node"><span class="dt-q">≥4</span><span class="dt-arrow">→</span><span data-zh="檢查上下平台對稱性。若不對稱（多數競爭型 ELISA / multiplex）→ 5-PL" data-en="Check asymmetry of plateaus. If asymmetric (competitive / multiplex ELISA) → 5-PL"></span></div>
+<div class="dt-node"><span class="dt-q">Q2.</span><span class="dt-arrow">→</span><span data-zh="<strong>weighting？</strong>" data-en="<strong>Weighting?</strong>"></span></div>
+<div class="dt-node"><span class="dt-q">→</span><span class="dt-arrow"></span><span data-zh="OD 變異常隨濃度上升 → 1/Y² 加權，否則高濃度點主導 fit" data-en="OD variance scales with concentration → use 1/Y² weighting, else high-conc points dominate"></span></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="常見陷阱" data-en="COMMON PITFALLS">常見陷阱</div>
+<h2 data-zh="四、reviewer 必問清單" data-en="IV. Reviewer checklist">四、reviewer 必問清單</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>❌ <span data-zh="線性硬套 4-PL 範圍" data-en="Linear fit on the full S-curve">線性硬套 S 曲線</span></h4><div data-lang="zh"><p>把整條 S 曲線塞進線性回歸，導致兩端非線性區外推完全錯誤。</p></div><div data-lang="en"><p>Forcing linear regression on the full sigmoid extrapolates the non-linear plateaus completely wrong.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="未做 spike-and-recovery" data-en="No spike-and-recovery">未做 spike-and-recovery</span></h4><div data-lang="zh"><p>不同 matrix（血漿 vs 細胞培養液）可能造成 30-50% 偏差。Recovery 應在 80-120% 區間。</p></div><div data-lang="en"><p>Different matrices (plasma vs media) cause 30-50% bias. Recovery should be 80-120%.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="抗體未驗證" data-en="Unvalidated antibody">抗體未驗證</span></h4><div data-lang="zh"><p>商用抗體在 KO 細胞失敗率 &gt; 50%。檢查 YCharOS / Antibodypedia / 期刊 RRID。</p></div><div data-lang="en"><p>Commercial antibodies fail in KO controls &gt; 50% of the time. Check YCharOS / Antibodypedia / journal RRIDs.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="不報告 inter-plate CV" data-en="No inter-plate CV">不報告 inter-plate CV</span></h4><div data-lang="zh"><p>同樣品在不同盤的 CV 應 &lt; 15%。跨盤分析需在每盤放入 QC 樣品做漂移校正。</p></div><div data-lang="en"><p>Same sample across plates should have CV &lt; 15%. For cross-plate analyses, include QC samples on every plate for drift correction.</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗" data-en="🎯 Quick Quiz">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="LOQ 的定義最接近？" data-en="LOQ is defined as?">LOQ 的定義最接近？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">blank mean + 1·SD</div>
+<div class="quiz-opt" data-correct="false">blank mean + 3·SD</div>
+<div class="quiz-opt" data-correct="true">blank mean + 10·SD (CV ≤ 20%)</div>
+<div class="quiz-opt" data-correct="false">血漿基線 × 5</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>2. <span data-zh="競爭型 ELISA 標準曲線通常使用？" data-en="Competitive ELISA usually requires?">競爭型 ELISA 通常使用？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Linear regression</div>
+<div class="quiz-opt" data-correct="false">4-PL (symmetric)</div>
+<div class="quiz-opt" data-correct="true">5-PL (asymmetric)</div>
+<div class="quiz-opt" data-correct="false">Polynomial degree 4</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>3. <span data-zh="樣品 OD 高於最高標準品時應？" data-en="When sample OD exceeds the top standard?">樣品 OD 高於最高標準品時應？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="直接外插曲線" data-en="Extrapolate the curve">外插</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="稀釋樣品重新分析" data-en="Dilute and re-run">稀釋重測</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="報告 &gt; 最高標準濃度" data-en="Report '&gt; max conc'">報告大於最高</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="改用線性回歸" data-en="Switch to linear regression">改線性</span></div>
+</div><div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="western-blot.html"><span class="nav-dir">← 上一章</span><span class="nav-title" data-zh="Step 2 · Western Blot 蛋白質定量" data-en="Step 2 · Western Blot Quantification">Step 2 · Western Blot 蛋白質定量</span></a>
+<a href="flow-cytometry.html"><span class="nav-dir">下一章 →</span><span class="nav-title" data-zh="Step 4 · 流式細胞術定量" data-en="Step 4 · Flow Cytometry Quantification">Step 4 · 流式細胞術定量</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — QDA Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'});
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！':'✗ 再想想';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+
+const ctx=document.getElementById('elisaChart');
+const concs=[];for(let i=-1;i<=4;i+=0.1)concs.push(Math.pow(10,i));
+const chart=new Chart(ctx,{type:'line',data:{labels:concs.map(c=>c.toFixed(2)),datasets:[
+{label:'4-PL curve',data:[],borderColor:'#3730a3',tension:.3,pointRadius:0,fill:false},
+{label:'Sample OD',data:[],borderColor:'#b45309',borderWidth:2,borderDash:[5,5],pointRadius:0}
+]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'logarithmic',title:{display:true,text:'concentration pg/mL'}},y:{title:{display:true,text:'OD'},min:0,max:3}}}});
+function fpl(x,A,B,C,D){return D+(A-D)/(1+Math.pow(x/C,B));}
+function inv(y,A,B,C,D){return C*Math.pow((A-D)/(y-D)-1, 1/B);}
+function sim(){
+  const C=+document.getElementById('sliderEC50').value;
+  const B=+document.getElementById('sliderB').value;
+  const OD=+document.getElementById('sliderOD').value;
+  document.getElementById('valEC50').textContent=C;
+  document.getElementById('valB').textContent=B.toFixed(1);
+  document.getElementById('valOD').textContent=OD.toFixed(2);
+  const A=0.05, D=2.7;
+  chart.data.datasets[0].data=concs.map(c=>({x:c,y:fpl(c,A,B,C,D)}));
+  chart.data.datasets[1].data=concs.map(c=>({x:c,y:OD}));
+  chart.update();
+  const conc=inv(OD,A,B,C,D);
+  const warn = OD<A+0.1 || OD>D-0.1 || isNaN(conc);
+  document.getElementById('statConc').textContent='Conc ≈ '+(isNaN(conc)?'OUT OF RANGE':conc.toFixed(1)+' pg/mL');
+  document.getElementById('statWarn').textContent= warn ? 'Outside ED20-ED80 — dilute!' : 'In quantifiable range ✓';
+  document.getElementById('statWarn').className='sim-stat '+(warn?'fail':'pass');
+}
+['sliderEC50','sliderB','sliderOD'].forEach(id=>document.getElementById(id).oninput=sim);sim();
+</script>
+</body></html>

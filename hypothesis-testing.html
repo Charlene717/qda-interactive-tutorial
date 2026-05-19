@@ -1,0 +1,208 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 7: Hypothesis Testing — QDA</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li><li><a href="western-blot.html">WB</a></li><li><a href="elisa.html">ELISA</a></li><li><a href="flow-cytometry.html">Flow</a></li><li><a href="image-quant.html">Image</a></li><li><a href="eda.html">EDA</a></li><li><a href="hypothesis-testing.html" class="active">Tests</a></li><li><a href="multiple-testing.html">MTC</a></li><li><a href="regression.html">Regr.</a></li><li><a href="effect-size.html">ES/Power</a></li><li><a href="omics-quant.html">Omics</a></li><li><a href="visualization.html">Viz</a></li><li><a href="reproducibility.html">Repro.</a></li><li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 7 / 14</div>
+<h1 data-zh="假設檢定" data-en="Hypothesis Testing">假設檢定</h1>
+<p class="subtitle" data-lang="zh">t-test、ANOVA、無母數——選對檢定、解對 p 值、超越「p &lt; 0.05」的二元思維。</p>
+<p class="subtitle" data-lang="en">t-test, ANOVA, non-parametric — picking the right test, reading the right p, beyond binary "p < 0.05" thinking.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="為什麼還要學假設檢定？" data-en="Why hypothesis testing still matters">為什麼還要學假設檢定？</h2>
+<div data-lang="zh"><p>ASA 在 2016 年發表「<strong>The ASA's Statement on p-Values</strong>」(Wasserstein & Lazar, <em>Am Stat</em>)，明確指出 6 大原則，包括「p 值不能衡量假設為真的機率」、「p &lt; 0.05 不等於重要」。2019 年補充聲明 (<em>Am Stat</em>) 建議「不要再以 p &lt; 0.05 作為唯一決策依據」。</p>
+<p>同年 Delacre, Lakens & Leys (2017, <em>Int Rev Soc Psychol</em>) 指出「<strong>預設用 Welch's t-test</strong>」優於 Student's t-test，因為 Welch 不假設等變異數，且在等變異時功效幾乎相同。Bootstrap 與 permutation tests 在小樣本與非常態下提供穩健替代。</p></div>
+<div data-lang="en"><p>The ASA's 2016 <strong>Statement on p-Values</strong> (Wasserstein & Lazar, <em>Am Stat</em>) laid out six principles, including "p-values are not the probability the hypothesis is true" and "p &lt; 0.05 ≠ important." A 2019 follow-up urged: "stop using p &lt; 0.05 as a sole decision rule."</p>
+<p>The same year, Delacre, Lakens & Leys (2017, <em>Int Rev Soc Psychol</em>) showed that <strong>Welch's t-test should be the default</strong> over Student's — it doesn't assume equal variances and matches Student's power when variances are equal. Bootstrap and permutation tests give robust alternatives for small / non-normal samples.</p></div>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div><span data-lang="zh"><strong>不要做的事：</strong>看到 p=0.06 稱「marginally significant」；把「p &gt; 0.05」當作「沒差異」；用 p 值比較「顯著與不顯著」的差異（互動效應需另做測試）。</span><span data-lang="en"><strong>Don'ts:</strong> Call p=0.06 "marginally significant"; treat p &gt; 0.05 as "no difference"; compare "significant vs not significant" claims to infer interaction (test the interaction directly).</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="決策樹" data-en="DECISION TREE">決策樹</div>
+<h2 data-zh="一、檢定選擇決策樹" data-en="I. Decision tree for picking a test">一、如何選對檢定</h2>
+<div class="decision-tree">
+<h4 data-zh="兩組比較" data-en="Two-group comparison">兩組比較</h4>
+<div class="dt-node"><span class="dt-q">Q1.</span><span class="dt-arrow">→</span><span data-zh="<strong>配對 (同一受試者前後)？</strong>" data-en="<strong>Paired (same subject before/after)?</strong>"></span></div>
+<div class="dt-node"><span class="dt-q">是</span><span class="dt-arrow">→</span><span data-zh="常態 → paired t-test；否則 → Wilcoxon signed-rank" data-en="Normal → paired t-test; else → Wilcoxon signed-rank"></span></div>
+<div class="dt-node"><span class="dt-q">否</span><span class="dt-arrow">→</span><span data-zh="常態 → Welch's t-test（預設）；否則 → Mann-Whitney U" data-en="Normal → Welch's t-test (default); else → Mann-Whitney U"></span></div>
+</div>
+<div class="decision-tree" style="margin-top:16px;">
+<h4 data-zh="≥3 組比較" data-en="≥3 groups">三組以上比較</h4>
+<div class="dt-node"><span class="dt-q">Q.</span><span class="dt-arrow">→</span><span data-zh="<strong>單因子？</strong>" data-en="<strong>Single factor?</strong>"></span></div>
+<div class="dt-node"><span class="dt-q">是</span><span class="dt-arrow">→</span><span data-zh="常態+等變異 → one-way ANOVA + Tukey HSD；否則 → Welch ANOVA / Kruskal-Wallis + Dunn's" data-en="Normal+equal var → one-way ANOVA + Tukey HSD; else → Welch ANOVA / Kruskal-Wallis + Dunn's"></span></div>
+<div class="dt-node"><span class="dt-q">否</span><span class="dt-arrow">→</span><span data-zh="兩因子 → two-way ANOVA；重複量測 → mixed-effects model (lmer)" data-en="Two factors → two-way ANOVA; repeated measures → mixed-effects model (lmer)"></span></div>
+</div>
+<div class="decision-tree" style="margin-top:16px;">
+<h4 data-zh="類別資料" data-en="Categorical">類別資料</h4>
+<div class="dt-node"><span class="dt-q">→</span><span class="dt-arrow"></span><span data-zh="2×2 表期望次數 &gt; 5 → chi-square；&lt; 5 → Fisher exact test；&gt; 2 個類別 + 配對 → McNemar / Cochran's Q" data-en="2×2 with expected count &gt; 5 → chi-square; &lt; 5 → Fisher exact; multi-category + paired → McNemar / Cochran's Q"></span></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="效應量、樣本量與 p 值的關係" data-en="Effect size, n, and p-values">三者之間的舞蹈</h2>
+<div data-lang="zh"><p>調整效應量與樣本量，觀察 p 值變化。<strong>關鍵：</strong>大樣本下，幾乎所有非零的真實差異都會「顯著」；報告效應量與 CI 比 p 值更有意義。</p></div>
+<div data-lang="en"><p>Adjust effect size and n — watch p change. <strong>Key:</strong> at large n, any non-zero real difference becomes "significant"; effect size + CI matters more than p.</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span data-zh="效應量 Cohen's d" data-en="Effect size Cohen's d">Cohen's d</span><span id="valD">0.5</span></label><input type="range" id="sliderD" min="0" max="2" value="0.5" step="0.05"></div>
+<div class="slider-group"><label><span data-zh="每組樣本量" data-en="Per-group n">每組 n</span><span id="valNg">20</span></label><input type="range" id="sliderNg" min="3" max="500" value="20" step="1"></div>
+<div class="sim-stats"><span class="sim-stat pass" id="statT">—</span><span class="sim-stat pass" id="statPv">—</span></div>
+<div class="chart-container"><canvas id="htChart"></canvas></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="二、各種檢定的 R/Python 對照" data-en="II. R/Python cheat sheet">二、R / Python 程式碼對照</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" data-tab="r7">R</button><button class="code-tab-btn" data-tab="py7">Python</button></div>
+<div class="code-tab-content active" id="r7"><pre><span class="comment"># 預設 Welch's t-test（不假設等變異）</span>
+<span class="func">t.test</span>(value ~ group, data=df)               <span class="comment"># var.equal=FALSE 為預設</span>
+
+<span class="comment"># 配對 t-test</span>
+<span class="func">t.test</span>(df$post, df$pre, paired=TRUE)
+
+<span class="comment"># 無母數</span>
+<span class="func">wilcox.test</span>(value ~ group, data=df)          <span class="comment"># Mann-Whitney U</span>
+<span class="func">wilcox.test</span>(df$post, df$pre, paired=TRUE)    <span class="comment"># Wilcoxon signed-rank</span>
+
+<span class="comment"># ANOVA + post-hoc</span>
+fit &lt;- <span class="func">aov</span>(value ~ group, data=df)
+<span class="func">summary</span>(fit)
+<span class="func">TukeyHSD</span>(fit)
+<span class="func">kruskal.test</span>(value ~ group, data=df)          <span class="comment"># 無母數版</span>
+<span class="kw">library</span>(FSA); <span class="func">dunnTest</span>(value ~ group, data=df, method=<span class="str">"bh"</span>)
+
+<span class="comment"># 類別資料</span>
+<span class="func">chisq.test</span>(<span class="func">table</span>(df$group, df$outcome))
+<span class="func">fisher.test</span>(<span class="func">table</span>(df$group, df$outcome))      <span class="comment"># 小樣本</span>
+
+<span class="comment"># Bootstrap 95% CI of mean difference</span>
+<span class="kw">library</span>(boot)
+diff_fn &lt;- <span class="kw">function</span>(d, i) <span class="func">mean</span>(d$value[i & d$group==<span class="str">"A"</span>]) - <span class="func">mean</span>(d$value[i & d$group==<span class="str">"B"</span>])
+b &lt;- <span class="func">boot</span>(df, diff_fn, R=<span class="num">5000</span>)
+<span class="func">boot.ci</span>(b, type=<span class="str">"bca"</span>)
+</pre></div>
+<div class="code-tab-content" id="py7"><pre><span class="kw">import</span> pingouin <span class="kw">as</span> pg, scipy.stats <span class="kw">as</span> stats
+
+<span class="comment"># Welch's t-test — pingouin 一行給效應量 + BF</span>
+print(pg.<span class="func">ttest</span>(df.value[df.group==<span class="str">"A"</span>], df.value[df.group==<span class="str">"B"</span>], correction=True))
+
+<span class="comment"># 配對</span>
+print(pg.<span class="func">ttest</span>(df.post, df.pre, paired=True))
+
+<span class="comment"># 無母數</span>
+stats.<span class="func">mannwhitneyu</span>(df.value[df.group==<span class="str">"A"</span>], df.value[df.group==<span class="str">"B"</span>])
+stats.<span class="func">wilcoxon</span>(df.post, df.pre)
+
+<span class="comment"># ANOVA + post-hoc</span>
+print(pg.<span class="func">anova</span>(data=df, dv=<span class="str">"value"</span>, between=<span class="str">"group"</span>))
+print(pg.<span class="func">pairwise_tukey</span>(data=df, dv=<span class="str">"value"</span>, between=<span class="str">"group"</span>))
+stats.<span class="func">kruskal</span>(*[g.value <span class="kw">for</span> _,g <span class="kw">in</span> df.<span class="func">groupby</span>(<span class="str">"group"</span>)])
+
+<span class="comment"># 類別</span>
+stats.<span class="func">chi2_contingency</span>(pd.<span class="func">crosstab</span>(df.group, df.outcome))
+stats.<span class="func">fisher_exact</span>([[a,b],[c,d]])
+
+<span class="comment"># Bootstrap 95% CI</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+diffs = [np.<span class="func">mean</span>(np.random.choice(A,len(A),replace=True))-
+         np.<span class="func">mean</span>(np.random.choice(B,len(B),replace=True))
+         <span class="kw">for</span> _ <span class="kw">in</span> <span class="func">range</span>(<span class="num">5000</span>)]
+np.<span class="func">percentile</span>(diffs,[<span class="num">2.5</span>,<span class="num">97.5</span>])
+</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="ASA 六大原則" data-en="ASA SIX PRINCIPLES">ASA 六大原則</div>
+<h2 data-zh="三、ASA 2016 對 p 值的六個提醒" data-en="III. The ASA's six principles">三、p 值不是什麼</h2>
+<table class="comp-table">
+<thead><tr><th>#</th><th data-zh="原則" data-en="Principle">原則</th></tr></thead>
+<tbody>
+<tr><td>1</td><td data-zh="p 值可指示資料與特定統計模型的不相容程度" data-en="P-values indicate incompatibility between data and a model">可指示資料與模型的不相容程度</td></tr>
+<tr><td>2</td><td data-zh="p 值<strong>不是</strong>假設為真的機率，也不是隨機產生資料的機率" data-en="Not the probability the hypothesis is true">不是「假設為真」的機率</td></tr>
+<tr><td>3</td><td data-zh="科學結論不應只基於 p 值是否跨過閾值" data-en="Don't base conclusions only on whether p crosses a threshold">不應只用閾值決策</td></tr>
+<tr><td>4</td><td data-zh="正確推論需要完整報告與透明度（不能隱藏多重檢定）" data-en="Proper inference requires full reporting and transparency">需完整報告與透明</td></tr>
+<tr><td>5</td><td data-zh="p 值<strong>不衡量</strong>效應大小或結果重要性" data-en="P does not measure effect size or importance">不衡量效應/重要性</td></tr>
+<tr><td>6</td><td data-zh="p 值本身不能提供模型或假設的完整證據" data-en="P alone isn't sufficient evidence for a model">不是充分證據</td></tr>
+</tbody></table>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗" data-en="🎯 Quick Quiz">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="現代統計學者建議兩組獨立樣本的預設檢定為？" data-en="Modern recommended default for two-sample test?">兩組獨立樣本預設檢定？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Student's t-test</div>
+<div class="quiz-opt" data-correct="true">Welch's t-test</div>
+<div class="quiz-opt" data-correct="false">Paired t-test</div>
+<div class="quiz-opt" data-correct="false">Wilcoxon signed-rank</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>2. <span data-zh="ASA 2016 對 p 值的核心提醒是？" data-en="Core ASA 2016 message?">ASA 2016 的核心訊息？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="廢除 p 值" data-en="Abolish p-values">廢除 p 值</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="不要把 p<0.05 當作唯一決策依據" data-en="Don't use p<0.05 as the sole decision rule">不可作唯一決策</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="只能用 Bayesian" data-en="Only use Bayesian">只能 Bayesian</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="p 值取代效應量" data-en="P replaces effect size">取代效應量</span></div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>3. <span data-zh="2×2 表期望次數 &lt; 5 時應用？" data-en="2×2 with expected count &lt; 5?">2×2 期望次數 &lt; 5 用？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Chi-square test</div>
+<div class="quiz-opt" data-correct="true">Fisher's exact test</div>
+<div class="quiz-opt" data-correct="false">Two-sample t-test</div>
+<div class="quiz-opt" data-correct="false">ANOVA</div>
+</div><div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="eda.html"><span class="nav-dir">← 上一章</span><span class="nav-title" data-zh="Step 6 · 探索性資料分析 (EDA)" data-en="Step 6 · Exploratory Data Analysis (EDA)">Step 6 · 探索性資料分析 (EDA)</span></a>
+<a href="multiple-testing.html"><span class="nav-dir">下一章 →</span><span class="nav-title" data-zh="Step 8 · 多重比較與校正" data-en="Step 8 · Multiple Testing Correction">Step 8 · 多重比較與校正</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — QDA Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'});
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！':'✗ 再想想';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+
+const ctx=document.getElementById('htChart');
+const chart=new Chart(ctx,{type:'line',data:{labels:[],datasets:[
+  {label:'Group A',data:[],borderColor:'#3730a3',backgroundColor:'rgba(55,48,163,.15)',fill:true,tension:.3,pointRadius:0},
+  {label:'Group B',data:[],borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.15)',fill:true,tension:.3,pointRadius:0}
+]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{title:{display:true,text:'value'}},y:{title:{display:true,text:'density'}}}}});
+function norm(x,mu,sd){return Math.exp(-0.5*Math.pow((x-mu)/sd,2))/(sd*Math.sqrt(2*Math.PI));}
+function sim(){
+  const d=+document.getElementById('sliderD').value;
+  const n=+document.getElementById('sliderNg').value;
+  document.getElementById('valD').textContent=d.toFixed(2);
+  document.getElementById('valNg').textContent=n;
+  const xs=[]; for(let x=-4;x<=4;x+=0.1)xs.push(x);
+  chart.data.labels=xs.map(x=>x.toFixed(1));
+  chart.data.datasets[0].data=xs.map(x=>norm(x,0,1));
+  chart.data.datasets[1].data=xs.map(x=>norm(x,d,1));
+  chart.update();
+  // t-statistic for two-sample test, equal n, sd=1
+  const se = Math.sqrt(2/n);
+  const t  = d/se;
+  // approximate two-sided p via normal (large df ok)
+  const p  = 2*(1 - 0.5*(1+erf(Math.abs(t)/Math.sqrt(2))));
+  document.getElementById('statT').textContent='t ≈ '+t.toFixed(2);
+  document.getElementById('statPv').textContent='p ≈ '+(p<1e-4?p.toExponential(2):p.toFixed(4));
+  document.getElementById('statPv').className='sim-stat '+(p<0.05?'pass':'fail');
+}
+function erf(x){const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,pp=0.3275911;const sign=x<0?-1:1;x=Math.abs(x);const t=1/(1+pp*x);const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);return sign*y;}
+['sliderD','sliderNg'].forEach(id=>document.getElementById(id).oninput=sim);sim();
+</script>
+</body></html>

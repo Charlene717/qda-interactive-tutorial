@@ -1,0 +1,165 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 4: Flow Cytometry — QDA</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li><li><a href="western-blot.html">WB</a></li><li><a href="elisa.html">ELISA</a></li><li><a href="flow-cytometry.html" class="active">Flow</a></li><li><a href="image-quant.html">Image</a></li><li><a href="eda.html">EDA</a></li><li><a href="hypothesis-testing.html">Tests</a></li><li><a href="multiple-testing.html">MTC</a></li><li><a href="regression.html">Regr.</a></li><li><a href="effect-size.html">ES/Power</a></li><li><a href="omics-quant.html">Omics</a></li><li><a href="visualization.html">Viz</a></li><li><a href="reproducibility.html">Repro.</a></li><li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 4 / 14</div>
+<h1 data-zh="流式細胞術定量" data-en="Flow Cytometry Quantification">流式細胞術定量</h1>
+<p class="subtitle" data-lang="zh">Compensation、gating、MFI——從訊號到細胞次群的可信定量。</p>
+<p class="subtitle" data-lang="en">Compensation, gating, MFI — from raw signal to trustworthy cell subset quantification.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="為什麼 flow 結果常被質疑？" data-en="Why flow results are often challenged">為什麼 flow 結果常被質疑？</h2>
+<div data-lang="zh"><p>現代流式儀可同時偵測 28+ 色 (Cytek Aurora spectral)，但 compensation/unmixing 的微小錯誤會被高參數放大。Cossarizza et al. (2021) 在 <em>Eur J Immunol</em> 發表的「<strong>Guidelines for the use of flow cytometry and cell sorting in immunological studies (3rd ed.)</strong>」是當前最權威指引，搭配 ISAC 的 <strong>MIFlowCyt</strong> 報告規範。</p>
+<p>2025 年 spectral flow cytometry 已成主流，可將「自體螢光」當作獨立參數萃取，但要求 reference controls 必須含真細胞（不能只用 bead）。</p></div>
+<div data-lang="en"><p>Modern instruments can read 28+ colors (Cytek Aurora spectral). High parameter counts amplify even tiny compensation / unmixing errors. The <strong>Cossarizza et al. (2021, Eur J Immunol) "Guidelines for the use of flow cytometry and cell sorting in immunological studies, 3rd ed."</strong> are the current authority, alongside ISAC's <strong>MIFlowCyt</strong>.</p>
+<p>By 2025, spectral cytometry is mainstream and can extract autofluorescence as an independent parameter — but it requires reference controls on real cells, not beads alone.</p></div>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div><span data-lang="zh"><strong>核心：</strong>FMO (Fluorescence Minus One) 對照是現代定義 gate 的標準。Isotype control 已被淘汰——它無法反映抗體在你 panel 中的真實 spillover spread。</span><span data-lang="en"><strong>Core:</strong> FMO (Fluorescence Minus One) controls are now the standard for setting gates. Isotype controls are deprecated — they don't capture spillover spread in your actual panel.</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心概念" data-en="CORE CONCEPTS">核心概念</div>
+<h2 data-zh="一、MFI、% positive、絕對細胞數" data-en="I. MFI, % positive, absolute counts">一、三種定量輸出</h2>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">📊</div><h4>% positive</h4><div data-lang="zh"><p>陽性細胞佔比。對 marker 為「有/無」二元時最自然。<strong>須先以 FMO 設 gate</strong>。報告時須含母群定義（例如 % of CD3⁺ T cells）。</p></div><div data-lang="en"><p>Fraction of positive cells. Natural for binary markers. <strong>Set gate from FMO</strong>. Always state the parent population (e.g., % of CD3⁺ T cells).</p></div></div>
+<div class="card"><div class="card-icon">📈</div><h4>MFI</h4><div data-lang="zh"><p>「平均」表現強度，多用 <strong>median</strong>（mean 受 outlier 影響）。比較時需確保 cytometer setting 與 voltage 相同；不同實驗的 MFI 不可直接比，需做 MESF/QuantiBrite bead 校正。</p></div><div data-lang="en"><p>"Average" expression intensity — use <strong>median</strong> (mean is outlier-sensitive). Comparable only across runs with identical voltages; cross-day comparison needs MESF/QuantiBrite bead calibration.</p></div></div>
+<div class="card"><div class="card-icon">🔢</div><h4>Absolute count</h4><div data-lang="zh"><p>每 μL 細胞數。需用 <strong>counting beads</strong> 或體積式儀器。比例 (%) 變化可能反映其他細胞群增減，唯有絕對數能說明該群體本身是否擴增。</p></div><div data-lang="en"><p>Cells per μL. Requires <strong>counting beads</strong> or volumetric instrument. Percentages can change because other populations shift; only absolute counts confirm true expansion of a subset.</p></div></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="Gating 閾值的影響" data-en="Effect of gating threshold">Gating 閾值的影響</h2>
+<div data-lang="zh"><p>拖動閾值，觀察 % positive 與 MFI 變化。<strong>綠色點</strong>為通過 gate 的細胞。可以看到：對 MFI 而言，閾值只影響「哪些細胞被計入平均」，對極端 outlier 不敏感（用 median）。</p></div>
+<div data-lang="en"><p>Drag the threshold — see % positive and MFI shift. <strong>Green dots</strong> pass the gate. Note: median MFI is robust to outliers.</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span data-zh="Gate 閾值 (log fluorescence)" data-en="Gate threshold (log fluorescence)">Gate 閾值</span><span id="valGate">2.5</span></label><input type="range" id="sliderGate" min="1" max="4.5" value="2.5" step="0.1"></div>
+<div class="sim-stats"><span class="sim-stat pass" id="statPct">—</span><span class="sim-stat pass" id="statMfi">—</span></div>
+<div class="chart-container"><canvas id="flowChart"></canvas></div>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center;" data-zh="X：CD8 強度 (log) | Y：cell count" data-en="X: CD8 intensity (log) | Y: cell count">X：CD8 強度 | Y：cell count</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="二、R (flowCore/flowWorkspace) 與 Python (FlowKit/flowKit)" data-en="II. R (flowCore) and Python (FlowKit) workflows">二、Flow 資料分析程式碼</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" data-tab="r4">R</button><button class="code-tab-btn" data-tab="py4">Python</button></div>
+<div class="code-tab-content active" id="r4"><pre><span class="comment"># R: flowWorkspace + ggcyto</span>
+<span class="kw">library</span>(flowWorkspace); <span class="kw">library</span>(ggcyto)
+fs &lt;- <span class="func">read.flowSet</span>(<span class="func">list.files</span>(<span class="str">"fcs/"</span>, pattern=<span class="str">"\\.fcs$"</span>, full.names=TRUE))
+gs &lt;- <span class="func">GatingSet</span>(fs)
+
+<span class="comment"># Compensation 與 transform（logicle）</span>
+comp &lt;- <span class="func">spillover</span>(fs[[<span class="num">1</span>]])
+gs &lt;- <span class="func">compensate</span>(gs, comp)
+trans &lt;- <span class="func">estimateLogicle</span>(gs[[<span class="num">1</span>]], <span class="func">colnames</span>(comp$SPILL))
+gs &lt;- <span class="func">transform</span>(gs, trans)
+
+<span class="comment"># 加 gate：CD3+ → CD8+</span>
+<span class="func">gs_pop_add</span>(gs, <span class="func">rectangleGate</span>(<span class="str">"CD3-A"</span>=<span class="func">c</span>(<span class="num">2</span>,<span class="num">4.5</span>)), parent=<span class="str">"root"</span>, name=<span class="str">"CD3+"</span>)
+<span class="func">gs_pop_add</span>(gs, <span class="func">rectangleGate</span>(<span class="str">"CD8-A"</span>=<span class="func">c</span>(<span class="num">2.5</span>,<span class="num">4.5</span>)), parent=<span class="str">"CD3+"</span>, name=<span class="str">"CD8+"</span>)
+<span class="func">recompute</span>(gs)
+
+<span class="comment"># 萃取統計</span>
+stats &lt;- <span class="func">gs_pop_get_stats</span>(gs, nodes=<span class="str">"CD8+"</span>, type=<span class="str">"percent"</span>)
+mfi  &lt;- <span class="func">gs_pop_get_stats</span>(gs, nodes=<span class="str">"CD8+"</span>, type=<span class="kw">function</span>(x) <span class="func">median</span>(<span class="func">exprs</span>(x)[,<span class="str">"CD8-A"</span>]))
+</pre></div>
+<div class="code-tab-content" id="py4"><pre><span class="comment"># Python: FlowKit (Cytek/BD 推薦)</span>
+<span class="kw">import</span> flowkit <span class="kw">as</span> fk, numpy <span class="kw">as</span> np
+sample = fk.<span class="func">Sample</span>(<span class="str">"sample01.fcs"</span>)
+sample.<span class="func">apply_compensation</span>(spill_matrix)
+xform = fk.transforms.<span class="func">LogicleTransform</span>(<span class="str">"logicle"</span>, param_t=<span class="num">262144</span>, param_w=<span class="num">0.5</span>, param_m=<span class="num">4.5</span>, param_a=<span class="num">0</span>)
+sample.<span class="func">apply_transform</span>(xform)
+df = sample.<span class="func">as_dataframe</span>(source=<span class="str">"xform"</span>)
+
+<span class="comment"># Gating</span>
+cd3_pos = df.query(<span class="str">"`CD3-A` > 2"</span>)
+cd8_pos = cd3_pos.query(<span class="str">"`CD8-A` > 2.5"</span>)
+pct = <span class="func">len</span>(cd8_pos) / <span class="func">len</span>(cd3_pos) * <span class="num">100</span>
+mfi = np.<span class="func">median</span>(cd8_pos[<span class="str">"CD8-A"</span>])
+
+print(f<span class="str">"%CD8+ of CD3+: {pct:.2f}, median MFI: {mfi:.2f}"</span>)
+</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="常見陷阱" data-en="COMMON PITFALLS">常見陷阱</div>
+<h2 data-zh="三、Reviewer checklist" data-en="III. Reviewer checklist">三、reviewer 必問清單</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>❌ <span data-zh="用 isotype 設 gate" data-en="Isotype-based gating">isotype 設 gate</span></h4><div data-lang="zh"><p>Isotype antibody 親和力、螢光標記比例與你的抗體不同；改用 FMO。</p></div><div data-lang="en"><p>Isotype antibodies differ in affinity and F/P ratio from your antibody. Use FMO.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="無 viability dye" data-en="No viability dye">無活/死染色</span></h4><div data-lang="zh"><p>死細胞非特異結合任何抗體，造成假陽性；放 LIVE/DEAD 或 7-AAD/PI gate 是基本要求。</p></div><div data-lang="en"><p>Dead cells bind non-specifically to all antibodies → false positives. LIVE/DEAD or 7-AAD/PI gating is mandatory.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="未報告 cytometer 設定" data-en="No cytometer settings">未報告儀器設定</span></h4><div data-lang="zh"><p>MIFlowCyt 要求列出 instrument、voltages、laser 設定、compensation matrix。不同日量的 MFI 必須以 MESF bead 校正。</p></div><div data-lang="en"><p>MIFlowCyt requires reporting instrument, voltages, lasers, compensation matrix. Cross-day MFI needs MESF bead calibration.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="report mean MFI" data-en="Reporting mean MFI">報告 mean MFI</span></h4><div data-lang="zh"><p>螢光分布右偏 + outlier 拉高平均。應報 <strong>median</strong> 或 geometric mean。</p></div><div data-lang="en"><p>Fluorescence is right-skewed with outliers. Report <strong>median</strong> or geometric mean, not arithmetic mean.</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗" data-en="🎯 Quick Quiz">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="現代設 gate 的標準是？" data-en="Modern gold standard for gating?">現代設 gate 的標準是？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Isotype control</div>
+<div class="quiz-opt" data-correct="true">FMO (Fluorescence Minus One)</div>
+<div class="quiz-opt" data-correct="false">Unstained sample</div>
+<div class="quiz-opt" data-correct="false">Auto gating</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>2. <span data-zh="報告 MFI 應使用哪個統計？" data-en="Which statistic to report MFI?">報告 MFI 應使用？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Arithmetic mean</div>
+<div class="quiz-opt" data-correct="true"><span data-zh="Median 或 geometric mean" data-en="Median or geometric mean">Median / geo mean</span></div>
+<div class="quiz-opt" data-correct="false">Mode</div>
+<div class="quiz-opt" data-correct="false">Sum</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>3. <span data-zh="只報告 % positive 而非絕對細胞數有何問題？" data-en="Why is % positive alone problematic?">只報告 % positive 的問題？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="無法統計" data-en="Cannot be statistically tested">無法統計</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="比例變化可能來自其他細胞群增減而非該群體本身擴增" data-en="A % change may come from changes in other populations, not true expansion">比例變化可能來自其他群增減</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="須改用 MFI" data-en="Must switch to MFI">應改 MFI</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="MIFlowCyt 不允許" data-en="MIFlowCyt forbids it">MIFlowCyt 禁止</span></div>
+</div><div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="elisa.html"><span class="nav-dir">← 上一章</span><span class="nav-title" data-zh="Step 3 · ELISA 與標準曲線" data-en="Step 3 · ELISA &amp;amp; Standard Curves">Step 3 · ELISA 與標準曲線</span></a>
+<a href="image-quant.html"><span class="nav-dir">下一章 →</span><span class="nav-title" data-zh="Step 5 · 影像定量分析" data-en="Step 5 · Image Quantification">Step 5 · 影像定量分析</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — QDA Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'});
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！':'✗ 再想想';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+
+// Simulated CD8 bimodal histogram
+const bins=Array.from({length:45},(_,i)=>i*0.1+1);
+const counts=bins.map(x=>{const a=400*Math.exp(-Math.pow((x-1.7)/0.5,2));const b=250*Math.exp(-Math.pow((x-3.4)/0.4,2));return Math.round(a+b);});
+const ctx=document.getElementById('flowChart');
+const chart=new Chart(ctx,{type:'bar',data:{labels:bins.map(x=>x.toFixed(1)),datasets:[{label:'CD8 intensity',data:counts,backgroundColor:[]}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{title:{display:true,text:'cell count'}},x:{title:{display:true,text:'CD8 intensity (log)'}}}}});
+function sim(){
+  const gate=+document.getElementById('sliderGate').value;
+  document.getElementById('valGate').textContent=gate.toFixed(1);
+  let pos=0,tot=0,sumIntensity=0,intArr=[];
+  bins.forEach((x,i)=>{tot+=counts[i];if(x>=gate){pos+=counts[i]; for(let k=0;k<counts[i];k++)intArr.push(x);}});
+  chart.data.datasets[0].backgroundColor=bins.map(x=>x>=gate?'#3730a3':'#cbd5e1');
+  chart.update();
+  document.getElementById('statPct').textContent='% positive = '+(pos/tot*100).toFixed(1)+'%';
+  intArr.sort((a,b)=>a-b);
+  const med = intArr.length? intArr[Math.floor(intArr.length/2)] : 0;
+  document.getElementById('statMfi').textContent='Median MFI (gated) ≈ '+med.toFixed(2);
+}
+document.getElementById('sliderGate').oninput=sim;sim();
+</script>
+</body></html>

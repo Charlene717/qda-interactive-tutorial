@@ -1,0 +1,196 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 12: Visualization &amp; Reporting — QDA</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li><li><a href="western-blot.html">WB</a></li><li><a href="elisa.html">ELISA</a></li><li><a href="flow-cytometry.html">Flow</a></li><li><a href="image-quant.html">Image</a></li><li><a href="eda.html">EDA</a></li><li><a href="hypothesis-testing.html">Tests</a></li><li><a href="multiple-testing.html">MTC</a></li><li><a href="regression.html">Regr.</a></li><li><a href="effect-size.html">ES/Power</a></li><li><a href="omics-quant.html">Omics</a></li><li><a href="visualization.html" class="active">Viz</a></li><li><a href="reproducibility.html">Repro.</a></li><li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 12 / 14</div>
+<h1 data-zh="資料視覺化與報告" data-en="Data Visualization &amp; Reporting">資料視覺化與報告</h1>
+<p class="subtitle" data-lang="zh">告別 bar±SEM——SuperPlots、color-blind palette 與資料敘事。</p>
+<p class="subtitle" data-lang="en">Goodbye bar±SEM — SuperPlots, color-blind palettes, and data storytelling.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="為什麼 bar+errorbar 應該被退役？" data-en="Why bar+errorbar charts should retire">為什麼長條圖+errorbar 該退役？</h2>
+<div data-lang="zh"><p>Weissgerber et al. 2015 在 <em>PLOS Biology</em> 的「<strong>Beyond Bar and Line Graphs</strong>」一文成為里程碑——同一組平均值 + SEM 可能對應截然不同的資料分布（單峰、雙峰、含 outlier）。<strong>務必顯示每個資料點</strong>。Lord et al. 2020 (<em>JCB</em>) 提出 <strong>SuperPlots</strong>：以顏色標示不同生物重複的細胞層級資料，同時呈現技術與生物變異。</p>
+<p>Tufte 的「data-ink ratio」與 Wilke 2019 <em>Fundamentals of Data Visualization</em> 強調：去除多餘裝飾，用最少 ink 表達最多資訊。color-blind 友善的調色板（viridis 與 Okabe-Ito 8 色）已是現代期刊要求。</p></div>
+<div data-lang="en"><p>Weissgerber et al. 2015 (<em>PLOS Biology</em>) "<strong>Beyond Bar and Line Graphs</strong>" became a manifesto — identical mean + SEM can hide unimodal, bimodal, or outlier-laden distributions. <strong>Always show every data point.</strong> Lord et al. 2020 (<em>JCB</em>) introduced <strong>SuperPlots</strong>: color-code biological replicates and show cell-level + replicate-level variation together.</p>
+<p>Tufte's "data-ink ratio" and Wilke 2019 <em>Fundamentals of Data Visualization</em> stress: remove chart junk, maximize information per ink. Color-blind-safe palettes (viridis, Okabe-Ito 8 colors) are now journal requirements.</p></div>
+<div class="callout tip"><span class="callout-icon">💡</span><div><span data-lang="zh"><strong>三條金律：</strong>(1) 顯示原始點 (geom_jitter / stripplot)；(2) 標示 n 值與獨立實驗數；(3) 4 個以上集合用 UpSet plot 不要用 Venn diagram (Lex 2014, <em>IEEE TVCG</em>)。</span><span data-lang="en"><strong>Three golden rules:</strong> (1) Show raw points (geom_jitter / stripplot); (2) State n and number of independent experiments; (3) Use UpSet plot (Lex 2014, <em>IEEE TVCG</em>) for ≥4 sets, not Venn diagrams.</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="圖表選擇" data-en="CHART SELECTION">圖表選擇</div>
+<h2 data-zh="一、依資料類型選圖" data-en="I. Pick chart by data type">一、依資料類型選圖</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="資料類型" data-en="Data type">資料類型</th><th data-zh="推薦圖表" data-en="Recommended">推薦圖表</th><th data-zh="不推薦" data-en="Avoid">不推薦</th></tr></thead>
+<tbody>
+<tr><td data-zh="連續變量單一組分佈" data-en="Single-group continuous distribution">單組連續分佈</td><td data-zh="histogram + density、QQ plot" data-en="histogram + density, QQ plot">直方圖+density</td><td data-zh="bar + SEM" data-en="bar + SEM">bar + SEM</td></tr>
+<tr><td data-zh="多組比較 (n &lt; 30)" data-en="Group comparison (n < 30)">多組比較（小樣本）</td><td data-zh="dot plot / strip plot + 95% CI" data-en="dot plot / strip plot + 95% CI">點圖 + 95% CI</td><td data-zh="bar + SEM (Weissgerber 警告)" data-en="bar + SEM (Weissgerber)">bar + SEM</td></tr>
+<tr><td data-zh="多組比較 (n &gt; 30)" data-en="Group comparison (n > 30)">多組（大樣本）</td><td>violin + boxplot, ridge</td><td>pie chart</td></tr>
+<tr><td data-zh="兩變量關係" data-en="Bivariate">兩變量關係</td><td data-zh="scatter + smoother + correlation" data-en="scatter + smoother + correlation">散點+平滑+r</td><td data-zh="3D 散點" data-en="3D scatter">3D 散點</td></tr>
+<tr><td data-zh="多重重複組學" data-en="Multi-batch omics">多批次組學</td><td>heatmap (cluster), PCA</td><td data-zh="瀑布圖" data-en="waterfall chart">瀑布圖</td></tr>
+<tr><td data-zh="差異基因/蛋白總覽" data-en="DE genes/proteins overview">差異基因總覽</td><td data-zh="volcano plot (log2FC vs −log10 padj)" data-en="volcano (log2FC vs −log10 padj)">volcano</td><td>bar of top genes</td></tr>
+<tr><td data-zh="≥4 集合交集" data-en="≥4 set intersections">≥4 集合交集</td><td>UpSet plot</td><td>Venn diagram</td></tr>
+<tr><td data-zh="多研究 meta-analysis" data-en="Meta-analysis">統合分析</td><td>forest plot</td><td data-zh="多個 bar" data-en="separate bar charts">分散 bar</td></tr>
+</tbody></table>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="同一組資料的三種展示" data-en="Three ways to plot the same data">同一組資料 → 三種觀感</h2>
+<div data-lang="zh"><p>切換按鈕，觀察 bar+SEM、box plot、dot plot 對<strong>同一組資料</strong>的呈現差異。重點：bar+SEM 隱藏了 outlier 與雙峰，dot plot 全部攤開。</p></div>
+<div data-lang="en"><p>Toggle the buttons — see how bar+SEM, boxplot, and dot plot present the <strong>same data</strong>. Bar+SEM hides outliers and bimodality; dot plot shows it all.</p></div>
+<div class="interactive-panel">
+<div class="toggle-row">
+  <button class="toggle-btn active" data-mode="bar">bar + SEM</button>
+  <button class="toggle-btn" data-mode="box">box plot</button>
+  <button class="toggle-btn" data-mode="dot">dot plot (Weissgerber)</button>
+</div>
+<div class="slider-group"><label><span data-zh="加入雙峰" data-en="Add bimodality">雙峰強度</span><span id="valBi">0</span></label><input type="range" id="sliderBi" min="0" max="2" value="0" step="0.1"></div>
+<div class="chart-container"><canvas id="vizChart"></canvas></div>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center;" data-zh="兩組資料：n=20/組" data-en="Two groups, n=20 each">兩組 n=20</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="二、SuperPlot 與 Volcano 範例" data-en="II. SuperPlot &amp; volcano examples">二、SuperPlot 與 Volcano 範例</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" data-tab="r12">R (ggplot2)</button><button class="code-tab-btn" data-tab="py12">Python (seaborn)</button></div>
+<div class="code-tab-content active" id="r12"><pre><span class="kw">library</span>(ggplot2); <span class="kw">library</span>(dplyr); <span class="kw">library</span>(ggrepel); <span class="kw">library</span>(viridis)
+
+<span class="comment"># 1. SuperPlot — 顏色標示生物重複</span>
+sp &lt;- df %&gt;% <span class="func">group_by</span>(replicate, group) %&gt;%
+  <span class="func">summarise</span>(rep_mean = <span class="func">mean</span>(value), .groups=<span class="str">"drop"</span>)
+
+<span class="func">ggplot</span>(df, <span class="func">aes</span>(x=group, y=value, color=<span class="func">factor</span>(replicate))) +
+  <span class="func">geom_jitter</span>(width=<span class="num">.15</span>, alpha=<span class="num">.4</span>, size=<span class="num">1.5</span>) +
+  <span class="func">geom_point</span>(data=sp, <span class="func">aes</span>(y=rep_mean), size=<span class="num">5</span>, shape=<span class="num">95</span>) +
+  <span class="func">stat_summary</span>(fun=mean, geom=<span class="str">"crossbar"</span>, width=<span class="num">.4</span>, color=<span class="str">"black"</span>) +
+  <span class="func">scale_color_viridis</span>(discrete=TRUE, option=<span class="str">"D"</span>) +
+  <span class="func">theme_classic</span>() + <span class="func">labs</span>(color=<span class="str">"Bio rep"</span>)
+
+<span class="comment"># 2. Volcano plot with labels</span>
+res_df$sig &lt;- <span class="func">case_when</span>(res_df$padj &lt; <span class="num">.05</span> &amp; <span class="func">abs</span>(res_df$lfc) &gt; <span class="num">1</span> ~ <span class="str">"hit"</span>, TRUE ~ <span class="str">"ns"</span>)
+<span class="func">ggplot</span>(res_df, <span class="func">aes</span>(lfc, -<span class="func">log10</span>(padj), color=sig)) +
+  <span class="func">geom_point</span>(alpha=<span class="num">.5</span>) +
+  <span class="func">geom_text_repel</span>(data=<span class="func">filter</span>(res_df, sig==<span class="str">"hit"</span>), <span class="func">aes</span>(label=gene), max.overlaps=<span class="num">20</span>) +
+  <span class="func">geom_vline</span>(xintercept=<span class="func">c</span>(-<span class="num">1</span>,<span class="num">1</span>), lty=<span class="num">2</span>) + <span class="func">geom_hline</span>(yintercept=-<span class="func">log10</span>(<span class="num">.05</span>), lty=<span class="num">2</span>)
+</pre></div>
+<div class="code-tab-content" id="py12"><pre><span class="kw">import</span> seaborn <span class="kw">as</span> sns, matplotlib.pyplot <span class="kw">as</span> plt
+
+<span class="comment"># 1. SuperPlot 風格</span>
+fig, ax = plt.<span class="func">subplots</span>(figsize=(<span class="num">5</span>,<span class="num">4</span>))
+sns.<span class="func">stripplot</span>(data=df, x=<span class="str">"group"</span>, y=<span class="str">"value"</span>, hue=<span class="str">"replicate"</span>,
+              palette=<span class="str">"viridis"</span>, jitter=.<span class="num">15</span>, alpha=.<span class="num">4</span>, ax=ax, size=<span class="num">4</span>)
+rep_mean = df.<span class="func">groupby</span>([<span class="str">"replicate"</span>,<span class="str">"group"</span>])[<span class="str">"value"</span>].<span class="func">mean</span>().<span class="func">reset_index</span>()
+sns.<span class="func">stripplot</span>(data=rep_mean, x=<span class="str">"group"</span>, y=<span class="str">"value"</span>, hue=<span class="str">"replicate"</span>,
+              palette=<span class="str">"viridis"</span>, marker=<span class="str">"_"</span>, size=<span class="num">30</span>, jitter=False, ax=ax, legend=False)
+sns.<span class="func">pointplot</span>(data=df, x=<span class="str">"group"</span>, y=<span class="str">"value"</span>, color=<span class="str">"k"</span>, errorbar=(<span class="str">"ci"</span>,<span class="num">95</span>), ax=ax, markers=<span class="str">"D"</span>)
+
+<span class="comment"># 2. Volcano</span>
+fig, ax = plt.<span class="func">subplots</span>()
+ax.<span class="func">scatter</span>(res.lfc, -np.<span class="func">log10</span>(res.padj), c=<span class="str">"#ccc"</span>, s=<span class="num">8</span>, alpha=.<span class="num">5</span>)
+hits = (res.padj &lt; .<span class="num">05</span>) &amp; (res.lfc.<span class="func">abs</span>() &gt; <span class="num">1</span>)
+ax.<span class="func">scatter</span>(res.lfc[hits], -np.<span class="func">log10</span>(res.padj[hits]), c=<span class="str">"#3730a3"</span>, s=<span class="num">14</span>)
+ax.<span class="func">axhline</span>(-np.<span class="func">log10</span>(.<span class="num">05</span>), ls=<span class="str">"--"</span>, c=<span class="str">"#888"</span>); ax.<span class="func">axvline</span>(<span class="num">1</span>, ls=<span class="str">"--"</span>, c=<span class="str">"#888"</span>); ax.<span class="func">axvline</span>(-<span class="num">1</span>, ls=<span class="str">"--"</span>, c=<span class="str">"#888"</span>)
+</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="常見陷阱" data-en="COMMON PITFALLS">常見陷阱</div>
+<h2 data-zh="三、視覺化的雷區" data-en="III. Visualization landmines">三、視覺化的雷區</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>❌ <span data-zh="3D pie / 3D bar" data-en="3D pie / 3D bar">3D 圓餅 / 3D 長條</span></h4><div data-lang="zh"><p>視角扭曲比例。Tufte 與所有現代視覺化教科書一致反對。</p></div><div data-lang="en"><p>3D distorts proportions. Universally rejected by modern viz textbooks.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="軸不從 0 開始" data-en="Truncated axes">軸不從 0 開始</span></h4><div data-lang="zh"><p>誇大微小差異。長條圖必須從 0 開始；點圖可截斷但必須明顯標示。</p></div><div data-lang="en"><p>Exaggerates trivial differences. Bar charts must start at 0; dot plots may truncate but with clear indication.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="紅綠 heatmap" data-en="Red-green heatmap">紅綠 heatmap</span></h4><div data-lang="zh"><p>對最常見的紅綠色盲不友善。改用 viridis、RdBu、Okabe-Ito。</p></div><div data-lang="en"><p>Unfriendly to red-green colorblind viewers. Use viridis, RdBu, or Okabe-Ito.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="* / ** / *** 不註明 p 值" data-en="Stars without exact p">* ** *** 不註明 p</span></h4><div data-lang="zh"><p>現代期刊要求附 exact p。星號可保留為視覺指引，但 p 值必須在圖例或表格內。</p></div><div data-lang="en"><p>Modern journals require exact p-values. Asterisks may stay as visual cues, but report exact p in legend or table.</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗" data-en="🎯 Quick Quiz">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="Weissgerber 2015 PLOS Biology 的主要建議？" data-en="Weissgerber 2015 PLOS Bio main recommendation?">Weissgerber 2015 主要建議？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="禁用 ggplot2" data-en="Ban ggplot2">禁 ggplot2</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="以 dot/box plot 顯示原始資料，不要用 bar+SEM" data-en="Show raw data via dot/box plot, not bar+SEM">展示原始點</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="必須 3D" data-en="Must use 3D">必須 3D</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="一律用 violin" data-en="Always violin">一律 violin</span></div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>2. <span data-zh="≥ 4 個集合交集應該用？" data-en="≥4 set intersections — use?">≥4 集合交集用？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Venn diagram</div>
+<div class="quiz-opt" data-correct="true">UpSet plot</div>
+<div class="quiz-opt" data-correct="false">Sankey diagram</div>
+<div class="quiz-opt" data-correct="false">Pie chart</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>3. <span data-zh="color-blind 友善的調色板？" data-en="Color-blind-safe palette?">色盲友善調色板？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">rainbow / jet</div>
+<div class="quiz-opt" data-correct="true">viridis / Okabe-Ito</div>
+<div class="quiz-opt" data-correct="false">red-green diverging</div>
+<div class="quiz-opt" data-correct="false">HSV uniform</div>
+</div><div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="omics-quant.html"><span class="nav-dir">← 上一章</span><span class="nav-title" data-zh="Step 11 · 組學定量分析" data-en="Step 11 · Omics Quantification">Step 11 · 組學定量分析</span></a>
+<a href="reproducibility.html"><span class="nav-dir">下一章 →</span><span class="nav-title" data-zh="Step 13 · 再現性與報告標準" data-en="Step 13 · Reproducibility &amp;amp; Reporting Standards">Step 13 · 再現性與報告標準</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — QDA Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'});
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！':'✗ 再想想';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+
+let mode='bar';
+document.querySelectorAll('.toggle-btn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.toggle-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');mode=b.dataset.mode;render();});
+function randn(){let u=Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function genData(){
+  const bi=+document.getElementById('sliderBi').value;
+  document.getElementById('valBi').textContent=bi.toFixed(1);
+  const A=[],B=[];
+  for(let i=0;i<20;i++){A.push(randn()*1+5 + (Math.random()<0.5?-bi:bi));B.push(randn()*1+6.2 + (Math.random()<0.5?-bi:bi));}
+  return [A,B];
+}
+const ctx=document.getElementById('vizChart');
+const chart=new Chart(ctx,{type:'bar',data:{labels:['Group A','Group B'],datasets:[]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{title:{display:true,text:'value'}}}}});
+function render(){
+  const [A,B]=genData();
+  const mA=A.reduce((s,v)=>s+v,0)/A.length, mB=B.reduce((s,v)=>s+v,0)/B.length;
+  const sdA=Math.sqrt(A.reduce((s,v)=>s+(v-mA)**2,0)/(A.length-1)), sdB=Math.sqrt(B.reduce((s,v)=>s+(v-mB)**2,0)/(B.length-1));
+  const seA=sdA/Math.sqrt(A.length), seB=sdB/Math.sqrt(B.length);
+  if(mode==='bar'){
+    chart.config.type='bar';
+    chart.data.datasets=[{label:'mean ± SEM',data:[mA,mB],backgroundColor:'#3730a3',errorBars:{'Group A':{plus:seA,minus:seA},'Group B':{plus:seB,minus:seB}}}];
+  } else if(mode==='box'){
+    chart.config.type='bar';
+    A.sort((a,b)=>a-b);B.sort((a,b)=>a-b);
+    chart.data.datasets=[{label:'box approx (Q1-Q3)',data:[A[Math.floor(A.length*.75)]-A[Math.floor(A.length*.25)], B[Math.floor(B.length*.75)]-B[Math.floor(B.length*.25)]],backgroundColor:'#3730a3'}];
+  } else {
+    chart.config.type='scatter';
+    chart.data.datasets=[
+      {label:'Group A',data:A.map(v=>({x:1+(Math.random()-0.5)*0.3, y:v})),backgroundColor:'rgba(55,48,163,.7)',pointRadius:5},
+      {label:'Group B',data:B.map(v=>({x:2+(Math.random()-0.5)*0.3, y:v})),backgroundColor:'rgba(180,83,9,.7)',pointRadius:5}
+    ];
+    chart.options.scales.x={type:'linear',min:0,max:3,ticks:{stepSize:1,callback:v=>v===1?'Group A':v===2?'Group B':''}};
+  }
+  if(mode!=='dot') chart.options.scales.x={type:'category'};
+  chart.update();
+}
+document.getElementById('sliderBi').oninput=render;render();
+</script>
+</body></html>

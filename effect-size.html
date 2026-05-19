@@ -1,0 +1,178 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 10: Effect Size &amp; Power — QDA</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li><li><a href="western-blot.html">WB</a></li><li><a href="elisa.html">ELISA</a></li><li><a href="flow-cytometry.html">Flow</a></li><li><a href="image-quant.html">Image</a></li><li><a href="eda.html">EDA</a></li><li><a href="hypothesis-testing.html">Tests</a></li><li><a href="multiple-testing.html">MTC</a></li><li><a href="regression.html">Regr.</a></li><li><a href="effect-size.html" class="active">ES/Power</a></li><li><a href="omics-quant.html">Omics</a></li><li><a href="visualization.html">Viz</a></li><li><a href="reproducibility.html">Repro.</a></li><li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 10 / 14</div>
+<h1 data-zh="效應量與樣本數計算" data-en="Effect Size &amp; Sample Size">效應量與樣本數計算</h1>
+<p class="subtitle" data-lang="zh">Cohen's d、Hedges' g、Power analysis——讓「顯著」變成「重要」。</p>
+<p class="subtitle" data-lang="en">Cohen's d, Hedges' g, power analysis — turning "significant" into "meaningful."</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="p &lt; 0.05 ≠ 重要" data-en="p < 0.05 ≠ important">為什麼必須報告效應量？</h2>
+<div data-lang="zh"><p>樣本量夠大時，連 0.1% 的差異也會「顯著」。<strong>效應量 (effect size)</strong> 才告訴你差異有多大、是否值得在生物學上關心。Cohen (1988) 在 <em>Statistical Power Analysis for the Behavioral Sciences</em> 提出 d=0.2/0.5/0.8 為 small/medium/large，但 2024 年 Giner-Sorolla 等 (<em>Personality Soc Psych Rev</em>) 建議改用 <strong>SESOI (Smallest Effect Size of Interest)</strong>——由領域決定何謂「值得」的效應。</p>
+<p>Power analysis 由 Faul et al. 2007 (<em>Behav Res Methods</em>) 的 <strong>G*Power 3</strong> 普及；R 的 <code>pwr</code> 與 Python 的 <code>statsmodels</code>/<code>pingouin</code> 提供等效功能。<strong>Post hoc power</strong>（用觀察效應量回算功效）被 Hoenig & Heisey 2001 嚴正反對——它與 p 值一一對應，沒有提供新資訊。</p></div>
+<div data-lang="en"><p>With large n, even a 0.1% difference becomes "significant." <strong>Effect size</strong> tells you how big the difference is and whether it matters biologically. Cohen (1988) proposed d=0.2/0.5/0.8 as small/medium/large; Giner-Sorolla et al. 2024 (<em>Personality Soc Psych Rev</em>) advocate the <strong>SESOI (Smallest Effect Size of Interest)</strong> — let the field decide what counts as "meaningful."</p>
+<p>Power analysis was popularized by <strong>G*Power 3</strong> (Faul et al. 2007, <em>Behav Res Methods</em>); R's <code>pwr</code> and Python's <code>statsmodels</code>/<code>pingouin</code> are equivalent. <strong>Post hoc power</strong> (computed from observed effect size) is rejected by Hoenig & Heisey 2001 — it's one-to-one with the p-value and adds nothing.</p></div>
+<div class="callout danger"><span class="callout-icon">🚨</span><div><span data-lang="zh"><strong>禁忌：</strong>在拿到「不顯著」結果後跑 post hoc power 自我安慰；應改做 <strong>sensitivity analysis</strong>（給定 n 與 α，最小可偵測效應量）。</span><span data-lang="en"><strong>Forbidden:</strong> Computing post hoc power to console yourself after a non-significant result. Instead do <strong>sensitivity analysis</strong> (given n and α, what's the smallest detectable effect).</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心概念" data-en="CORE CONCEPTS">核心概念</div>
+<h2 data-zh="一、常用效應量" data-en="I. Common effect sizes">一、常用效應量速查</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="效應量" data-en="Metric">效應量</th><th data-zh="適用場景" data-en="Use case">適用</th><th data-zh="公式 / 解讀" data-en="Formula / interpretation">公式</th><th data-zh="慣例" data-en="Convention">慣例</th></tr></thead>
+<tbody>
+<tr><td><strong>Cohen's d</strong></td><td data-zh="兩組均值差異" data-en="Two-group mean difference">兩組均值差</td><td>(M₁−M₂)/SD_pooled</td><td>0.2 / 0.5 / 0.8</td></tr>
+<tr><td><strong>Hedges' g</strong></td><td data-zh="小樣本 (n&lt;20) 校正" data-en="Small-sample correction">小樣本</td><td>d × (1 − 3/(4df−1))</td><td data-zh="同 d" data-en="Same as d">同 d</td></tr>
+<tr><td><strong>η² / partial η²</strong></td><td data-zh="ANOVA 變異佔比" data-en="ANOVA variance explained">ANOVA</td><td>SS_effect / SS_total</td><td>0.01 / 0.06 / 0.14</td></tr>
+<tr><td><strong>Pearson r</strong></td><td data-zh="連續相關" data-en="Continuous correlation">連續相關</td><td>cov(X,Y)/(SD_X·SD_Y)</td><td>0.1 / 0.3 / 0.5</td></tr>
+<tr><td><strong>OR / RR</strong></td><td data-zh="類別結果" data-en="Binary outcomes">類別結果</td><td>odds₁/odds₀ ; risk₁/risk₀</td><td data-zh="領域而異" data-en="Field-specific">領域決定</td></tr>
+<tr><td><strong>Cliff's δ</strong></td><td data-zh="無母數兩組比較" data-en="Non-parametric two-group">無母數</td><td>P(X&gt;Y) − P(Y&gt;X)</td><td>0.147 / 0.33 / 0.474</td></tr>
+</tbody></table>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="樣本量計算器" data-en="Sample size calculator">a priori 樣本量計算器（兩組 t-test）</h2>
+<div data-lang="zh"><p>給定預期效應量 d 與目標功效 (1−β)，計算每組需要的樣本量（兩側 α=0.05, equal n）。</p></div>
+<div data-lang="en"><p>Given an expected effect size d and target power (1−β), compute required per-group sample size (two-sided α=0.05, equal n).</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span data-zh="預期 Cohen's d" data-en="Expected Cohen's d">預期 d</span><span id="valD2">0.5</span></label><input type="range" id="sliderD2" min="0.05" max="2" value="0.5" step="0.05"></div>
+<div class="slider-group"><label><span data-zh="目標 power (1−β)" data-en="Target power (1−β)">目標 power</span><span id="valPow">0.80</span></label><input type="range" id="sliderPow" min="0.5" max="0.99" value="0.8" step="0.01"></div>
+<div class="sim-stats"><span class="sim-stat pass" id="statN">—</span><span class="sim-stat fail" id="statRange">—</span></div>
+<div class="chart-container"><canvas id="esChart"></canvas></div>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center;" data-zh="曲線：在不同 n 下達到的 power" data-en="Curve: power achieved at varying n">不同 n 對應的 power</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="二、R (pwr) 與 Python (statsmodels)" data-en="II. R (pwr) and Python (statsmodels)">二、效應量與 Power 計算</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" data-tab="r10">R</button><button class="code-tab-btn" data-tab="py10">Python</button></div>
+<div class="code-tab-content active" id="r10"><pre><span class="kw">library</span>(pwr); <span class="kw">library</span>(effectsize)
+
+<span class="comment"># 1. 效應量計算（兩組）</span>
+<span class="func">cohens_d</span>(value ~ group, data=df)         <span class="comment"># Cohen's d</span>
+<span class="func">hedges_g</span>(value ~ group, data=df)         <span class="comment"># 小樣本校正</span>
+<span class="func">cliffs_delta</span>(value ~ group, data=df)     <span class="comment"># 無母數</span>
+
+<span class="comment"># 2. a priori 樣本量計算（兩組 t-test）</span>
+<span class="func">pwr.t.test</span>(d=<span class="num">0.5</span>, power=<span class="num">0.8</span>, sig.level=<span class="num">0.05</span>, type=<span class="str">"two.sample"</span>)
+
+<span class="comment"># 3. ANOVA 樣本量</span>
+<span class="func">pwr.anova.test</span>(k=<span class="num">4</span>, f=<span class="num">0.25</span>, power=<span class="num">0.8</span>, sig.level=<span class="num">0.05</span>)
+
+<span class="comment"># 4. Sensitivity（最小可偵測效應；給定 n、α、power）</span>
+<span class="func">pwr.t.test</span>(n=<span class="num">20</span>, power=<span class="num">0.8</span>, sig.level=<span class="num">0.05</span>, type=<span class="str">"two.sample"</span>)$d
+
+<span class="comment"># 5. Mixed-effect / repeated measure 用 simr 模擬</span>
+<span class="kw">library</span>(simr)
+<span class="func">powerSim</span>(fit_lmer, nsim=<span class="num">100</span>)
+</pre></div>
+<div class="code-tab-content" id="py10"><pre><span class="kw">import</span> pingouin <span class="kw">as</span> pg
+<span class="kw">from</span> statsmodels.stats.power <span class="kw">import</span> TTestIndPower, FTestAnovaPower
+
+<span class="comment"># 1. 效應量</span>
+print(pg.<span class="func">compute_effsize</span>(df.A, df.B, eftype=<span class="str">"cohen"</span>))    <span class="comment"># Cohen's d</span>
+print(pg.<span class="func">compute_effsize</span>(df.A, df.B, eftype=<span class="str">"hedges"</span>))   <span class="comment"># Hedges' g</span>
+print(pg.<span class="func">compute_effsize</span>(df.A, df.B, eftype=<span class="str">"CLES"</span>))     <span class="comment"># common language effect</span>
+
+<span class="comment"># 2. a priori 樣本量（兩組 t-test）</span>
+analysis = <span class="func">TTestIndPower</span>()
+n = analysis.<span class="func">solve_power</span>(effect_size=<span class="num">0.5</span>, power=<span class="num">0.8</span>, alpha=<span class="num">0.05</span>)
+print(f<span class="str">"每組需要 n ≈ {n:.0f}"</span>)
+
+<span class="comment"># 3. ANOVA 樣本量</span>
+anova_pow = <span class="func">FTestAnovaPower</span>()
+n_per = anova_pow.<span class="func">solve_power</span>(effect_size=<span class="num">0.25</span>, k_groups=<span class="num">4</span>, power=<span class="num">0.8</span>, alpha=<span class="num">0.05</span>)
+
+<span class="comment"># 4. Sensitivity</span>
+d_min = analysis.<span class="func">solve_power</span>(nobs1=<span class="num">20</span>, power=<span class="num">0.8</span>, alpha=<span class="num">0.05</span>)
+print(f<span class="str">"n=20 時可偵測最小 d = {d_min:.2f}"</span>)
+</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="常見陷阱" data-en="COMMON PITFALLS">常見陷阱</div>
+<h2 data-zh="三、效應量與 Power 常見錯誤" data-en="III. Common ES/power mistakes">三、最常見錯誤</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>❌ <span data-zh="Post hoc power" data-en="Post hoc power">Post hoc power 自慰</span></h4><div data-lang="zh"><p>用觀察 effect size 算 power 與 p 一一對應，毫無新資訊。改做 sensitivity analysis 或 equivalence test。</p></div><div data-lang="en"><p>Power computed from observed ES is 1-to-1 with p — uninformative. Do sensitivity analysis or equivalence testing instead.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="效應量不附 CI" data-en="ES without CI">效應量不附 CI</span></h4><div data-lang="zh"><p>d = 0.5 (95% CI: 0.1 – 0.9) 與 d = 0.5 (95% CI: 0.48 – 0.52) 訊息天差地遠。永遠報告 CI。</p></div><div data-lang="en"><p>d = 0.5 (95% CI 0.1–0.9) vs d = 0.5 (95% CI 0.48–0.52) carry very different information. Always report CIs.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="盲套 Cohen 1988 慣例" data-en="Blindly using Cohen 1988 cutoffs">盲套 Cohen 0.2/0.5/0.8</span></h4><div data-lang="zh"><p>不同領域典型效應量差異極大。如老年學 Brydges 2019 重估 small/medium/large 應為 0.16/0.38/0.76。</p></div><div data-lang="en"><p>Typical effects vary by field. Brydges 2019 re-estimated gerontology cutoffs as 0.16/0.38/0.76.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="Power = 80% 視為金科玉律" data-en="80% power as gospel">80% power 視為定律</span></h4><div data-lang="zh"><p>80% 是慣例非定律。重大臨床試驗常用 ≥ 90%；探索性 pilot 可接受 60-70%。</p></div><div data-lang="en"><p>80% is convention, not law. Pivotal trials often use ≥ 90%; exploratory pilots can accept 60–70%.</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗" data-en="🎯 Quick Quiz">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="樣本 n=10、t-test 不顯著（p=0.4），應該？" data-en="n=10 t-test, p=0.4 — what to do?">n=10 t-test p=0.4 應做？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Post hoc power</div>
+<div class="quiz-opt" data-correct="true"><span data-zh="Sensitivity analysis（最小可偵測 d）" data-en="Sensitivity analysis (smallest detectable d)">Sensitivity analysis</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="刪除三個樣本重算" data-en="Drop 3 samples">刪 3 樣本重算</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="改用無母數" data-en="Switch to non-parametric">改無母數</span></div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>2. <span data-zh="小樣本 (n=8) 比較組均值差，最適合的效應量？" data-en="Small sample (n=8) two-group: best ES?">小樣本兩組比較最佳 ES？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Cohen's d</div>
+<div class="quiz-opt" data-correct="true">Hedges' g</div>
+<div class="quiz-opt" data-correct="false">η²</div>
+<div class="quiz-opt" data-correct="false">Pearson r</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>3. <span data-zh="效應量報告必須附上？" data-en="Effect sizes must be reported with?">效應量報告必附？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">p value</div>
+<div class="quiz-opt" data-correct="true">95% confidence interval</div>
+<div class="quiz-opt" data-correct="false">SEM</div>
+<div class="quiz-opt" data-correct="false">R²</div>
+</div><div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="regression.html"><span class="nav-dir">← 上一章</span><span class="nav-title" data-zh="Step 9 · 回歸、相關與劑量反應" data-en="Step 9 · Regression, Correlation, Dose-Response">Step 9 · 回歸、相關與劑量反應</span></a>
+<a href="omics-quant.html"><span class="nav-dir">下一章 →</span><span class="nav-title" data-zh="Step 11 · 組學定量分析" data-en="Step 11 · Omics Quantification">Step 11 · 組學定量分析</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — QDA Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'});
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！':'✗ 再想想';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+
+const ctx=document.getElementById('esChart');
+const ns=[5,10,15,20,30,40,60,80,100,150,200,300,500,800];
+const chart=new Chart(ctx,{type:'line',data:{labels:ns,datasets:[{label:'Power vs n (per group)',data:[],borderColor:'#3730a3',backgroundColor:'rgba(55,48,163,.15)',fill:true,tension:.3}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{title:{display:true,text:'Power (1−β)'},min:0,max:1},x:{title:{display:true,text:'n per group'}}}}});
+function erf(x){const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,pp=0.3275911;const sign=x<0?-1:1;x=Math.abs(x);const t=1/(1+pp*x);const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);return sign*y;}
+function ncf(x,nc){return 0.5*(1+erf((x-nc)/Math.sqrt(2)));}
+function powerTwoSample(d,n,alpha=0.05){const zcrit=1.96;const ncp=d*Math.sqrt(n/2);return 1-ncf(zcrit,ncp);}
+function sim(){
+  const d=+document.getElementById('sliderD2').value;
+  const pow=+document.getElementById('sliderPow').value;
+  document.getElementById('valD2').textContent=d.toFixed(2);
+  document.getElementById('valPow').textContent=pow.toFixed(2);
+  chart.data.datasets[0].data=ns.map(n=>powerTwoSample(d,n));chart.update();
+  // approximate required n
+  const za=1.96, zb={0.5:0,0.6:0.253,0.7:0.524,0.8:0.842,0.9:1.282,0.95:1.645}[Math.round(pow*100)/100] || 0.842;
+  const nNeed = 2*Math.pow((za+zb)/d,2);
+  document.getElementById('statN').textContent='Required n ≈ '+Math.ceil(nNeed)+'/group';
+  document.getElementById('statRange').textContent = nNeed>200 ? 'Large n — verify feasibility' : 'Feasible';
+  document.getElementById('statRange').className='sim-stat '+(nNeed>200?'fail':'pass');
+}
+['sliderD2','sliderPow'].forEach(id=>document.getElementById(id).oninput=sim);sim();
+</script>
+</body></html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 5: Image Quantification — QDA</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li><li><a href="western-blot.html">WB</a></li><li><a href="elisa.html">ELISA</a></li><li><a href="flow-cytometry.html">Flow</a></li><li><a href="image-quant.html" class="active">Image</a></li><li><a href="eda.html">EDA</a></li><li><a href="hypothesis-testing.html">Tests</a></li><li><a href="multiple-testing.html">MTC</a></li><li><a href="regression.html">Regr.</a></li><li><a href="effect-size.html">ES/Power</a></li><li><a href="omics-quant.html">Omics</a></li><li><a href="visualization.html">Viz</a></li><li><a href="reproducibility.html">Repro.</a></li><li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 5 / 14</div>
+<h1 data-zh="影像定量分析" data-en="Image Quantification">影像定量分析</h1>
+<p class="subtitle" data-lang="zh">ROI、背景校正、共定位——從 Fiji 到 Cellpose3 的可重現量化流程。</p>
+<p class="subtitle" data-lang="en">ROI, background correction, colocalization — reproducible quantification from Fiji to Cellpose3.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="一張看起來很美的影像，為什麼不能直接量化？" data-en="Why a beautiful image isn't a quantifiable image">一張美的影像 ≠ 可量化的影像</h2>
+<div data-lang="zh"><p>顯微鏡影像進入 ImageJ/Fiji (Schindelin 2012, <em>Nat Methods</em>) 後，pixel 值受 (1) 偵測器增益、(2) 雷射功率、(3) 樣品染色批次、(4) 顯示窗口 LUT 影響。任一項在實驗組與對照組間不同就會偽造差異。<strong>QUAREP-LiMi</strong> 自 2020 年起推動光顯微鏡品保標準，<strong>4DN-BINA-OME</strong> 則制定影像元數據規範。</p>
+<p>2025 年 <strong>Cellpose3 (Stringer & Pachitariu, <em>Nat Methods</em>)</strong> 整合一鍵影像修復，搭配 StarDist (Schmidt 2018)、QuPath (Bankhead 2017) 與 CellProfiler 4 (Stirling 2021) 成為主流四大工具。</p></div>
+<div data-lang="en"><p>Microscopy images entering Fiji/ImageJ (Schindelin 2012, <em>Nat Methods</em>) carry pixel values affected by (1) detector gain, (2) laser power, (3) staining batch, (4) display LUT. Any of these differing between groups invents fake differences. <strong>QUAREP-LiMi</strong> drives microscopy QA standards since 2020; <strong>4DN-BINA-OME</strong> defines image metadata.</p>
+<p>By 2025, <strong>Cellpose3 (Stringer & Pachitariu, <em>Nat Methods</em>)</strong> adds one-click image restoration; together with StarDist (Schmidt 2018), QuPath (Bankhead 2017), and CellProfiler 4 (Stirling 2021), these form the dominant toolkit.</p></div>
+<div class="callout danger"><span class="callout-icon">🚨</span><div><span data-lang="zh"><strong>絕對禁忌：</strong>(1) 用 8-bit JPEG 量化（壓縮失真）；(2) 在 Brightness/Contrast 調整後的影像上量化；(3) 不同樣品用不同曝光時間。原始 16-bit TIFF + 一致採集參數 是定量的最低門檻。</span><span data-lang="en"><strong>Absolute don'ts:</strong> (1) Quantifying on 8-bit JPEG (lossy compression); (2) Quantifying after Brightness/Contrast adjustment; (3) Different exposure between samples. Raw 16-bit TIFF + identical acquisition settings is the floor.</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心概念" data-en="CORE CONCEPTS">核心概念</div>
+<h2 data-zh="一、五個影像量化必懂概念" data-en="I. Five essentials">一、五個必懂概念</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>📐 <span data-zh="ROI（感興趣區域）" data-en="ROI (region of interest)">ROI</span></h4><div data-lang="zh"><p>手動勾選或自動分割（Cellpose/StarDist）。報告時需描述：是否盲法、最低細胞數、視野數。</p></div><div data-lang="en"><p>Manual or automated (Cellpose/StarDist). Always report: blinded? min cell count? number of fields?</p></div></div>
+<div class="card"><h4>🌑 <span data-zh="背景扣除" data-en="Background subtraction">背景扣除</span></h4><div data-lang="zh"><p><code>Process &gt; Subtract Background</code>（rolling ball，半徑略大於最大物件）。共定位前必扣，否則背景拉升 Pearson r。</p></div><div data-lang="en"><p><code>Process &gt; Subtract Background</code> (rolling ball, radius slightly &gt; largest object). Required before colocalization or background inflates Pearson r.</p></div></div>
+<div class="card"><h4>🎨 <span data-zh="共定位 Pearson r" data-en="Pearson colocalization">Pearson r</span></h4><div data-lang="zh"><p>強度線性相關 (−1~+1)；對背景敏感、忽略「比例」資訊。適合分布相似度判斷。</p></div><div data-lang="en"><p>Linear intensity correlation (−1 to +1); background-sensitive; ignores "overlap fraction". Use for distribution similarity.</p></div></div>
+<div class="card"><h4>🎯 <span data-zh="共定位 Manders M1/M2" data-en="Manders M1/M2">Manders M1/M2</span></h4><div data-lang="zh"><p>「A 訊號中與 B 重疊比例」。需先設閾值，建議用 Costes automatic thresholding 避免主觀。</p></div><div data-lang="en"><p>"Fraction of A overlapping with B." Requires threshold; use Costes automatic thresholding to avoid bias.</p></div></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="背景扣除對共定位的影響" data-en="How background subtraction changes colocalization">背景對共定位的影響</h2>
+<div data-lang="zh"><p>調整背景強度與閾值，觀察 Pearson r 與 Manders M1 變化。<strong>關鍵：</strong>不扣背景時 Pearson r 會被假性拉高（因為背景在兩通道都「同步」）。</p></div>
+<div data-lang="en"><p>Adjust background and threshold — see Pearson r and Manders M1 shift. <strong>Key insight:</strong> without background subtraction, Pearson r is falsely inflated (background co-varies across channels).</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span data-zh="背景強度" data-en="Background level">背景強度</span><span id="valBg">20</span></label><input type="range" id="sliderBg" min="0" max="100" value="20"></div>
+<div class="slider-group"><label><span data-zh="閾值" data-en="Threshold">閾值</span><span id="valThr">50</span></label><input type="range" id="sliderThr" min="0" max="200" value="50"></div>
+<div class="sim-stats"><span class="sim-stat pass" id="statPear">—</span><span class="sim-stat pass" id="statMnd">—</span></div>
+<div class="chart-container"><canvas id="imgChart"></canvas></div>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center;" data-zh="X：通道 A 強度 | Y：通道 B 強度（每點 = 1 pixel）" data-en="X: channel A intensity | Y: channel B intensity (each point = 1 pixel)">X：通道 A | Y：通道 B</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="二、Fiji macro vs Python (scikit-image)" data-en="II. Fiji macro vs Python (scikit-image)">二、影像量化程式碼</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" data-tab="r5">R / Fiji macro</button><button class="code-tab-btn" data-tab="py5">Python</button></div>
+<div class="code-tab-content active" id="r5"><pre><span class="comment">// Fiji macro：批次量化資料夾內所有 TIFF</span>
+dir = <span class="func">getDirectory</span>(<span class="str">"input"</span>);
+files = <span class="func">getFileList</span>(dir);
+<span class="func">setOption</span>(<span class="str">"ExpandableArrays"</span>, true);
+<span class="kw">for</span> (i=<span class="num">0</span>; i&lt;files.length; i++) {
+  <span class="func">open</span>(dir+files[i]);
+  <span class="func">run</span>(<span class="str">"Subtract Background..."</span>, <span class="str">"rolling=50"</span>);
+  <span class="func">setAutoThreshold</span>(<span class="str">"Otsu dark"</span>);
+  <span class="func">run</span>(<span class="str">"Analyze Particles..."</span>, <span class="str">"size=20-Infinity display"</span>);
+  <span class="func">close</span>();
+}
+<span class="comment">// R: 後處理 ImageJ 輸出的 Results.csv</span>
+<span class="kw">library</span>(tidyverse)
+res &lt;- <span class="func">read_csv</span>(<span class="str">"Results.csv"</span>) %&gt;%
+  <span class="func">mutate</span>(image = <span class="func">str_extract</span>(Label, <span class="str">"[^:]+"</span>)) %&gt;%
+  <span class="func">group_by</span>(image) %&gt;%
+  <span class="func">summarise</span>(n=<span class="func">n</span>(), meanInt=<span class="func">mean</span>(Mean), totalArea=<span class="func">sum</span>(Area))
+</pre></div>
+<div class="code-tab-content" id="py5"><pre><span class="kw">import</span> numpy <span class="kw">as</span> np, tifffile, pandas <span class="kw">as</span> pd
+<span class="kw">from</span> skimage <span class="kw">import</span> filters, morphology, measure
+<span class="kw">from</span> scipy.stats <span class="kw">import</span> pearsonr
+
+img = tifffile.<span class="func">imread</span>(<span class="str">"sample.tif"</span>)        <span class="comment"># shape (C, Y, X)</span>
+chA, chB = img[<span class="num">0</span>], img[<span class="num">1</span>]
+
+<span class="comment"># Rolling ball background subtraction</span>
+<span class="kw">from</span> skimage.restoration <span class="kw">import</span> rolling_ball
+chA_bg = chA - <span class="func">rolling_ball</span>(chA, radius=<span class="num">50</span>)
+chB_bg = chB - <span class="func">rolling_ball</span>(chB, radius=<span class="num">50</span>)
+
+<span class="comment"># 閾值（Otsu）後計算 Pearson 與 Manders</span>
+tA = chA_bg &gt; filters.<span class="func">threshold_otsu</span>(chA_bg)
+tB = chB_bg &gt; filters.<span class="func">threshold_otsu</span>(chB_bg)
+mask = tA | tB
+pearson_r, _ = <span class="func">pearsonr</span>(chA_bg[mask].ravel(), chB_bg[mask].ravel())
+M1 = (chA_bg * tB).<span class="func">sum</span>() / chA_bg.<span class="func">sum</span>()
+M2 = (chB_bg * tA).<span class="func">sum</span>() / chB_bg.<span class="func">sum</span>()
+print(f<span class="str">"Pearson r = {pearson_r:.3f}, M1 = {M1:.3f}, M2 = {M2:.3f}"</span>)
+
+<span class="comment"># Cellpose3 一鍵分割（2025）</span>
+<span class="kw">from</span> cellpose <span class="kw">import</span> models, denoise
+model = models.<span class="func">CellposeModel</span>(gpu=True, model_type=<span class="str">"cyto3"</span>)
+masks, flows, _ = model.<span class="func">eval</span>(chA_bg, diameter=<span class="num">30</span>)
+props = measure.<span class="func">regionprops_table</span>(masks, intensity_image=chA_bg, properties=(<span class="str">"area"</span>,<span class="str">"mean_intensity"</span>))
+pd.<span class="func">DataFrame</span>(props).to_csv(<span class="str">"cells.csv"</span>, index=False)
+</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="常見陷阱" data-en="COMMON PITFALLS">常見陷阱</div>
+<h2 data-zh="三、影像 reviewer checklist" data-en="III. Image reviewer checklist">三、reviewer 必問清單</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>❌ <span data-zh="代表性圖片就是分析" data-en="Representative image = analysis">代表性圖片 = 分析</span></h4><div data-lang="zh"><p>一張代表圖只是定性。量化必須 ≥ 3 個獨立樣本、每樣本 ≥ 3 個視野、每視野 ≥ 20 個物件。</p></div><div data-lang="en"><p>One representative image is qualitative. Quantify ≥3 independent samples × ≥3 fields × ≥20 objects.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="不同曝光量化" data-en="Different exposures">不同曝光量化</span></h4><div data-lang="zh"><p>所有比較組必須用<strong>相同</strong>採集設定。亮度/對比可在展示時不同，但量化階段不可。</p></div><div data-lang="en"><p>All compared groups must use <strong>identical</strong> acquisition. Display brightness/contrast can differ for figures, but never for quantification.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="自選 ROI 偏差" data-en="ROI selection bias">ROI 選擇偏差</span></h4><div data-lang="zh"><p>「選好看的細胞」是嚴重 confounding。盲法或自動分割是底線。</p></div><div data-lang="en"><p>"Picking nice cells" is severe confounding. Blinding or automated segmentation is mandatory.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="無 scale bar / metadata" data-en="No scale bar / metadata">無 scale bar / metadata</span></h4><div data-lang="zh"><p>4DN-BINA-OME 要求 OME-TIFF 帶物理像素大小、通道名、雷射波長。Fiji 的「Bio-Formats」可保存。</p></div><div data-lang="en"><p>4DN-BINA-OME requires OME-TIFF with physical pixel size, channel name, laser wavelength. Save via Fiji's "Bio-Formats."</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗" data-en="🎯 Quick Quiz">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="量化共定位前必須做的步驟？" data-en="Required step before colocalization?">量化共定位前必須做？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="把影像轉成 JPEG" data-en="Convert to JPEG">轉 JPEG</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="背景扣除" data-en="Background subtraction">背景扣除</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="3D 重建" data-en="3D reconstruction">3D 重建</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="增加亮度" data-en="Increase brightness">增亮度</span></div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>2. <span data-zh="量化用的最低影像規格？" data-en="Minimum image format for quantification?">量化用的最低影像規格？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">8-bit JPEG</div>
+<div class="quiz-opt" data-correct="true">16-bit TIFF</div>
+<div class="quiz-opt" data-correct="false">PNG with transparency</div>
+<div class="quiz-opt" data-correct="false">GIF animation</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>3. <span data-zh="Pearson r 與 Manders M1 的差別？" data-en="Difference between Pearson r and Manders M1?">Pearson r 與 Manders M1 差別？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="只是符號不同" data-en="Just sign convention">只是符號</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="Pearson 量強度線性相關；Manders 量重疊比例" data-en="Pearson = linear intensity correlation; Manders = overlap fraction">線性相關 vs 重疊比例</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="完全相同" data-en="Identical">相同</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="Manders 適合 RGB" data-en="Manders only for RGB">Manders 限 RGB</span></div>
+</div><div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="flow-cytometry.html"><span class="nav-dir">← 上一章</span><span class="nav-title" data-zh="Step 4 · 流式細胞術定量" data-en="Step 4 · Flow Cytometry Quantification">Step 4 · 流式細胞術定量</span></a>
+<a href="eda.html"><span class="nav-dir">下一章 →</span><span class="nav-title" data-zh="Step 6 · 探索性資料分析 (EDA)" data-en="Step 6 · Exploratory Data Analysis (EDA)">Step 6 · 探索性資料分析 (EDA)</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — QDA Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'});
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！':'✗ 再想想';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+
+// Synthetic pixel data: 200 colocalized + 200 non-coloc points + background
+const pixels=[];
+for(let i=0;i<300;i++){const v=Math.random()*200;pixels.push({a:v+10*Math.random(),b:v*0.9+15*Math.random(),true:true});}
+for(let i=0;i<200;i++){pixels.push({a:Math.random()*180,b:Math.random()*180,true:false});}
+const ctx=document.getElementById('imgChart');
+const chart=new Chart(ctx,{type:'scatter',data:{datasets:[{label:'pixels',data:[],pointRadius:2,backgroundColor:'rgba(55,48,163,.5)'}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{title:{display:true,text:'Channel A intensity'},min:0,max:300},y:{title:{display:true,text:'Channel B intensity'},min:0,max:300}}}});
+function sim(){
+  const bg=+document.getElementById('sliderBg').value;
+  const thr=+document.getElementById('sliderThr').value;
+  document.getElementById('valBg').textContent=bg;
+  document.getElementById('valThr').textContent=thr;
+  const data=pixels.map(p=>({x:p.a+bg,y:p.b+bg}));
+  chart.data.datasets[0].data=data;chart.update();
+  // Pearson
+  const xs=data.map(d=>d.x), ys=data.map(d=>d.y);
+  const mx=xs.reduce((s,v)=>s+v,0)/xs.length, my=ys.reduce((s,v)=>s+v,0)/ys.length;
+  let num=0,dx=0,dy=0; xs.forEach((x,i)=>{num+=(x-mx)*(ys[i]-my); dx+=(x-mx)**2; dy+=(ys[i]-my)**2;});
+  const r=num/Math.sqrt(dx*dy);
+  // Manders M1 above threshold
+  let sumA=0, overlap=0; xs.forEach((x,i)=>{if(x>thr){sumA+=x; if(ys[i]>thr) overlap+=x;}});
+  const M1 = sumA>0 ? overlap/sumA : 0;
+  document.getElementById('statPear').textContent='Pearson r = '+r.toFixed(3);
+  document.getElementById('statMnd').textContent='Manders M1 = '+M1.toFixed(3);
+}
+['sliderBg','sliderThr'].forEach(id=>document.getElementById(id).oninput=sim);sim();
+</script>
+</body></html>

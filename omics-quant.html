@@ -1,0 +1,187 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 11: Omics Quantification — QDA</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li><li><a href="western-blot.html">WB</a></li><li><a href="elisa.html">ELISA</a></li><li><a href="flow-cytometry.html">Flow</a></li><li><a href="image-quant.html">Image</a></li><li><a href="eda.html">EDA</a></li><li><a href="hypothesis-testing.html">Tests</a></li><li><a href="multiple-testing.html">MTC</a></li><li><a href="regression.html">Regr.</a></li><li><a href="effect-size.html">ES/Power</a></li><li><a href="omics-quant.html" class="active">Omics</a></li><li><a href="visualization.html">Viz</a></li><li><a href="reproducibility.html">Repro.</a></li><li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 11 / 14</div>
+<h1 data-zh="組學定量分析" data-en="Omics Quantification">組學定量分析</h1>
+<p class="subtitle" data-lang="zh">RNA-seq、Proteomics——counts、TPM、log2FC、DESeq2 的正確使用姿勢。</p>
+<p class="subtitle" data-lang="en">RNA-seq, proteomics — counts, TPM, log2FC, and DESeq2 done right.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="counts 不能直接比較" data-en="Raw counts are not comparable">為什麼 raw counts 不能直接比？</h2>
+<div data-lang="zh"><p>RNA-seq 與 LFQ proteomics 的原始 counts 受 (1) 樣本總定序深度、(2) 基因/蛋白長度、(3) 組成偏差影響。Wagner et al. 2012 證明 RPKM/FPKM 在樣本間不可比（總和不為定值），<strong>TPM</strong> 才是現代標準。但 TPM 仍不適合 DE 分析——應改用 negative binomial 模型（DESeq2 / edgeR）或 voom 加權 (Law 2014)。</p>
+<p>差異基因分析的金標準是 <strong>DESeq2 (Love et al. 2014, <em>Genome Biol</em>)</strong> + <strong>apeglm (Zhu et al. 2018)</strong> 的 shrinkage log2FC。蛋白體 LFQ 用 <strong>MaxLFQ (Cox et al. 2014, <em>MCP</em>)</strong> 配合 Perseus / FragPipe / DIA-NN。</p></div>
+<div data-lang="en"><p>Raw counts from RNA-seq / LFQ proteomics are influenced by (1) total sequencing depth, (2) gene/protein length, (3) composition bias. Wagner 2012 proved RPKM/FPKM are not comparable across samples (sum is not constant); <strong>TPM</strong> is now the standard. But TPM is still wrong for DE — use negative binomial models (DESeq2 / edgeR) or voom weighting (Law 2014).</p>
+<p>The DE gold standard: <strong>DESeq2 (Love et al. 2014, <em>Genome Biol</em>)</strong> + <strong>apeglm (Zhu et al. 2018)</strong> shrinkage log2FC. Proteomics LFQ uses <strong>MaxLFQ (Cox et al. 2014, <em>MCP</em>)</strong> with Perseus / FragPipe / DIA-NN.</p></div>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div><span data-lang="zh"><strong>核心：</strong>(1) DE 分析絕不直接用 TPM/FPKM 做 t-test；應給 DESeq2 raw counts；(2) 排序基因時應用 <strong>shrunken</strong> log2FC，否則低 count 基因因大變異被誤判。</span><span data-lang="en"><strong>Core:</strong> (1) Never run t-test on TPM/FPKM for DE — feed raw counts to DESeq2; (2) Rank genes by <strong>shrunken</strong> log2FC; otherwise low-count genes get inflated by noise.</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心概念" data-en="CORE CONCEPTS">核心概念</div>
+<h2 data-zh="一、定量單位辨識卡" data-en="I. Quantification unit cheatsheet">一、定量單位辨識卡</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="單位" data-en="Unit">單位</th><th data-zh="計算" data-en="Computation">計算</th><th data-zh="樣本可比？" data-en="Cross-sample?">可比？</th><th data-zh="DE 用途" data-en="DE use">DE 用</th></tr></thead>
+<tbody>
+<tr><td><strong>Raw counts</strong></td><td data-zh="比對到該基因的 reads 數" data-en="Reads mapped to gene">原始 read 數</td><td>❌</td><td data-zh="✓ DESeq2/edgeR 必須" data-en="✓ Required by DESeq2/edgeR">✓ DESeq2</td></tr>
+<tr><td><strong>RPKM / FPKM</strong></td><td>counts / (length × total/1e6 / 1000)</td><td>❌ <span data-zh="樣本總和不定" data-en="Sum varies">總和不定</span></td><td>❌</td></tr>
+<tr><td><strong>TPM</strong></td><td data-zh="先除長度、再正規化到 1e6" data-en="Length-normalize first, then to 1e6">先除長度</td><td>✓ <span data-zh="總和=1e6" data-en="Sum=1e6">總和固定</span></td><td>❌ <span data-zh="無變異模型" data-en="No variance model">無變異模型</span></td></tr>
+<tr><td><strong>DESeq2 norm counts</strong></td><td data-zh="median-of-ratios" data-en="Median-of-ratios">中位比例</td><td>✓</td><td>✓</td></tr>
+<tr><td><strong>vst / rlog</strong></td><td data-zh="變異穩定化轉換" data-en="Variance-stabilizing">VST</td><td>✓</td><td data-zh="PCA / clustering" data-en="PCA / clustering">PCA</td></tr>
+<tr><td><strong>MaxLFQ intensity</strong></td><td data-zh="蛋白質配對 ratio 中位化" data-en="Paired ratio normalization">配對比例</td><td>✓</td><td data-zh="proteomics" data-en="proteomics">蛋白</td></tr>
+</tbody></table>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="log2FC shrinkage 的效果" data-en="Effect of log2FC shrinkage">apeglm shrinkage 讓低 count 基因不再吵</h2>
+<div data-lang="zh"><p>調整 base mean 與 dispersion，觀察 raw 與 shrunken log2FC 差異。<strong>關鍵：</strong>低 count 基因 raw log2FC 變異極大，shrinkage 把它們拉回 0，讓排序更可靠。</p></div>
+<div data-lang="en"><p>Adjust base mean and dispersion. <strong>Key:</strong> low-count genes have wild raw log2FC; shrinkage pulls them toward zero, making rankings reliable.</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span data-zh="平均 base mean (counts)" data-en="Mean base count">平均 baseMean</span><span id="valBM">100</span></label><input type="range" id="sliderBM" min="1" max="10000" value="100" step="1"></div>
+<div class="slider-group"><label><span data-zh="dispersion (生物變異)" data-en="dispersion (biological)">dispersion</span><span id="valDisp">0.1</span></label><input type="range" id="sliderDisp" min="0.01" max="2" value="0.1" step="0.01"></div>
+<div class="sim-stats"><span class="sim-stat pass" id="statRaw">—</span><span class="sim-stat pass" id="statShr">—</span></div>
+<div class="chart-container"><canvas id="omChart"></canvas></div>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center;" data-zh="MA plot：X=log10(baseMean), Y=log2FC" data-en="MA plot: X=log10(baseMean), Y=log2FC">MA plot</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="二、DESeq2 (R) 與 pydeseq2 (Python)" data-en="II. DESeq2 (R) and pydeseq2 (Python)">二、DESeq2 完整流程</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" data-tab="r11">R (DESeq2)</button><button class="code-tab-btn" data-tab="py11">Python (pydeseq2)</button></div>
+<div class="code-tab-content active" id="r11"><pre><span class="kw">library</span>(DESeq2); <span class="kw">library</span>(apeglm)
+
+<span class="comment"># 1. 從 tximport 建 dds（建議 gene-level）</span>
+<span class="kw">library</span>(tximport)
+txi &lt;- <span class="func">tximport</span>(files=salmon_files, type=<span class="str">"salmon"</span>, tx2gene=tx2gene)
+dds &lt;- <span class="func">DESeqDataSetFromTximport</span>(txi, colData=coldata, design= ~ condition)
+
+<span class="comment"># 2. 預過濾低 count（提速）</span>
+dds &lt;- dds[<span class="func">rowSums</span>(<span class="func">counts</span>(dds)) &gt;= <span class="num">10</span>, ]
+
+<span class="comment"># 3. 跑差異分析</span>
+dds &lt;- <span class="func">DESeq</span>(dds)
+res &lt;- <span class="func">results</span>(dds, contrast=<span class="func">c</span>(<span class="str">"condition"</span>,<span class="str">"treated"</span>,<span class="str">"control"</span>))
+
+<span class="comment"># 4. log2FC shrinkage（apeglm 推薦）</span>
+res_shr &lt;- <span class="func">lfcShrink</span>(dds, coef=<span class="str">"condition_treated_vs_control"</span>, type=<span class="str">"apeglm"</span>)
+
+<span class="comment"># 5. VST 用於 PCA / heatmap</span>
+vsd &lt;- <span class="func">vst</span>(dds, blind=FALSE)
+<span class="func">plotPCA</span>(vsd, intgroup=<span class="str">"condition"</span>)
+
+<span class="comment"># 6. Volcano plot</span>
+<span class="kw">library</span>(EnhancedVolcano)
+<span class="func">EnhancedVolcano</span>(res_shr, lab=<span class="func">rownames</span>(res_shr), x=<span class="str">"log2FoldChange"</span>, y=<span class="str">"padj"</span>)
+</pre></div>
+<div class="code-tab-content" id="py11"><pre><span class="kw">from</span> pydeseq2.dds <span class="kw">import</span> DeseqDataSet
+<span class="kw">from</span> pydeseq2.ds <span class="kw">import</span> DeseqStats
+
+dds = <span class="func">DeseqDataSet</span>(counts=counts_df, metadata=meta, design_factors=<span class="str">"condition"</span>, refit_cooks=True)
+dds.<span class="func">deseq2</span>()
+
+stat_res = <span class="func">DeseqStats</span>(dds, contrast=[<span class="str">"condition"</span>,<span class="str">"treated"</span>,<span class="str">"control"</span>])
+stat_res.<span class="func">summary</span>()             <span class="comment"># 含 padj (BH-FDR)</span>
+stat_res.<span class="func">lfc_shrink</span>(coeff=<span class="str">"condition_treated_vs_control"</span>)   <span class="comment"># apeglm</span>
+
+<span class="comment"># PCA (sklearn)</span>
+<span class="kw">from</span> sklearn.decomposition <span class="kw">import</span> PCA
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+log_counts = np.<span class="func">log1p</span>(dds.<span class="func">layers</span>[<span class="str">"normed_counts"</span>])
+pca = <span class="func">PCA</span>(n_components=<span class="num">2</span>).<span class="func">fit_transform</span>(log_counts.T)
+</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="常見陷阱" data-en="COMMON PITFALLS">常見陷阱</div>
+<h2 data-zh="三、組學定量常見錯誤" data-en="III. Common omics mistakes">三、最常見錯誤</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>❌ <span data-zh="把 TPM 餵給 t-test" data-en="t-test on TPM">把 TPM 餵 t-test</span></h4><div data-lang="zh"><p>TPM 不滿足 NB 假設，違反獨立性。請給 DESeq2 raw counts。</p></div><div data-lang="en"><p>TPM violates NB assumptions and independence. Feed raw counts to DESeq2.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="忽略 shrinkage" data-en="Skipping shrinkage">忽略 shrinkage</span></h4><div data-lang="zh"><p>未 shrink 的 log2FC 在低 count 區噪聲極大；篩 top hits 會優先選到低 count 基因。</p></div><div data-lang="en"><p>Un-shrunken log2FC is noisy at low counts; top hits become dominated by low-count genes.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="n=3 就跑差異" data-en="DE at n=3">n=3 就跑 DE</span></h4><div data-lang="zh"><p>DESeq2 / edgeR 在 n=3 對 dispersion 估計很差，多為 false positive。2025 文獻建議 biological n ≥ 6，理想 12。</p></div><div data-lang="en"><p>DESeq2 / edgeR estimate dispersion poorly at n=3 → high FP. 2025 reviews recommend biological n ≥ 6, ideally 12.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="蛋白體未做 imputation 規範" data-en="Improper proteomics imputation">蛋白體亂 imputation</span></h4><div data-lang="zh"><p>MaxLFQ 缺失值常為 MNAR（低豐度未檢出）。先以 valid value 過濾再用 left-shifted Gaussian imputation。</p></div><div data-lang="en"><p>MaxLFQ missing values are usually MNAR (low-abundance, not detected). Filter valid values first, then left-shifted Gaussian imputation.</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗" data-en="🎯 Quick Quiz">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="樣本間可比的 RNA-seq 表現量單位是？" data-en="Which RNA-seq unit is cross-sample comparable?">樣本間可比的 RNA-seq 單位？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Raw counts</div>
+<div class="quiz-opt" data-correct="false">RPKM / FPKM</div>
+<div class="quiz-opt" data-correct="true">TPM</div>
+<div class="quiz-opt" data-correct="false">log2 counts</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>2. <span data-zh="排序差異基因應用何種 log2FC？" data-en="To rank DE genes, use what log2FC?">排序 DE 基因用？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Raw log2FC</div>
+<div class="quiz-opt" data-correct="true"><span data-zh="apeglm shrunken log2FC" data-en="apeglm shrunken log2FC">Shrunken log2FC</span></div>
+<div class="quiz-opt" data-correct="false">−log10(p)</div>
+<div class="quiz-opt" data-correct="false">TPM ratio</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>3. <span data-zh="2025 建議 RNA-seq DE 分析最少 biological n？" data-en="2025 recommendation for min biological n in RNA-seq DE?">RNA-seq DE 最少 n？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">2</div>
+<div class="quiz-opt" data-correct="false">3</div>
+<div class="quiz-opt" data-correct="true">≥ 6（理想 12）</div>
+<div class="quiz-opt" data-correct="false">100</div>
+</div><div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="effect-size.html"><span class="nav-dir">← 上一章</span><span class="nav-title" data-zh="Step 10 · 效應量與樣本數計算" data-en="Step 10 · Effect Size &amp;amp; Sample Size">Step 10 · 效應量與樣本數計算</span></a>
+<a href="visualization.html"><span class="nav-dir">下一章 →</span><span class="nav-title" data-zh="Step 12 · 資料視覺化與報告" data-en="Step 12 · Data Visualization &amp;amp; Reporting">Step 12 · 資料視覺化與報告</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — QDA Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'});
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！':'✗ 再想想';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+
+const ctx=document.getElementById('omChart');
+function randn(){let u=Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const chart=new Chart(ctx,{type:'scatter',data:{datasets:[
+  {label:'Raw log2FC',data:[],backgroundColor:'rgba(180,83,9,.4)',pointRadius:3},
+  {label:'Shrunken log2FC',data:[],backgroundColor:'rgba(55,48,163,.6)',pointRadius:3}
+]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'logarithmic',title:{display:true,text:'log10(baseMean)'}},y:{title:{display:true,text:'log2FC'},min:-6,max:6}}}});
+function sim(){
+  const bm=+document.getElementById('sliderBM').value;
+  const disp=+document.getElementById('sliderDisp').value;
+  document.getElementById('valBM').textContent=bm;
+  document.getElementById('valDisp').textContent=disp.toFixed(2);
+  const N=200;
+  const raw=[],shr=[];
+  for(let i=0;i<N;i++){
+    const bmi = Math.pow(10, Math.random()*4);     // 1 ~ 1e4
+    const se  = Math.sqrt(disp + 1/Math.sqrt(bmi))*1.2;
+    const trueLfc = 0;       // null gene
+    const rawLfc = trueLfc + randn()*se;
+    const shrLfc = rawLfc * (bmi/(bmi+20/Math.max(0.01,disp)));   // pseudo shrinkage
+    raw.push({x:bmi,y:rawLfc});
+    shr.push({x:bmi,y:shrLfc});
+  }
+  chart.data.datasets[0].data=raw;chart.data.datasets[1].data=shr;chart.update();
+  const rangeRaw = Math.max(...raw.map(p=>Math.abs(p.y)));
+  const rangeShr = Math.max(...shr.map(p=>Math.abs(p.y)));
+  document.getElementById('statRaw').textContent='Raw |log2FC| max ≈ '+rangeRaw.toFixed(2);
+  document.getElementById('statShr').textContent='Shrunken max ≈ '+rangeShr.toFixed(2);
+}
+['sliderBM','sliderDisp'].forEach(id=>document.getElementById(id).oninput=sim);sim();
+</script>
+</body></html>

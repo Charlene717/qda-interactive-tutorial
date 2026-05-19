@@ -1,0 +1,264 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 1: qPCR / RT-qPCR — Quantitative Data &amp; Analysis</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html" class="active">qPCR</a></li>
+    <li><a href="western-blot.html">WB</a></li>
+    <li><a href="elisa.html">ELISA</a></li>
+    <li><a href="flow-cytometry.html">Flow</a></li>
+    <li><a href="image-quant.html">Image</a></li>
+    <li><a href="eda.html">EDA</a></li>
+    <li><a href="hypothesis-testing.html">Tests</a></li>
+    <li><a href="multiple-testing.html">MTC</a></li>
+    <li><a href="regression.html">Regr.</a></li>
+    <li><a href="effect-size.html">ES/Power</a></li>
+    <li><a href="omics-quant.html">Omics</a></li>
+    <li><a href="visualization.html">Viz</a></li>
+    <li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 1 / 14</div>
+<h1 data-zh="qPCR / RT-qPCR 定量" data-en="qPCR / RT-qPCR Quantification">qPCR / RT-qPCR 定量</h1>
+<p class="subtitle" data-lang="zh">從 Cq 值到生物學意義——理解 PCR 效率、ΔΔCt 法與 2025 年最新的 MIQE 2.0 規範。</p>
+<p class="subtitle" data-lang="en">From Cq values to biological meaning — master PCR efficiency, the ΔΔCt method, and the 2025 MIQE 2.0 guidelines.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="為什麼 qPCR 看似簡單卻最常出錯？" data-en="Why qPCR is deceptively simple yet error-prone">為什麼 qPCR 看似簡單卻最常出錯？</h2>
+<div data-lang="zh">
+<p><strong>即時定量 PCR (qPCR)</strong> 是分子生物學最常用的核酸定量工具，但 MIQE 作者群在 2009 年指出，文獻中超過半數的 qPCR 報告缺少基本資訊（如 PCR 效率、reference gene 驗證），導致結果不可重現。16 年後 <strong>MIQE 2.0 (Bustin et al. 2025, Clin Chem)</strong> 首度大改版，新增 LOD/LOQ 信賴區間、原始資料強制公開、效率校正的目標量等要求。</p>
+<p>RT-qPCR 的訊號是<strong>對數放大</strong>：Cq 每差 1 代表起始量差 ~2 倍（100% 效率時）。任何一個環節的小錯誤（pipette 1 μL 差異、reference gene 選錯、效率忽略）都會被指數放大。</p>
+</div>
+<div data-lang="en">
+<p><strong>Real-time quantitative PCR (qPCR)</strong> is the workhorse of nucleic-acid quantification, but the MIQE authors showed in 2009 that over half of published qPCR reports lack basic information (PCR efficiency, reference-gene validation), making results irreproducible. Sixteen years later, <strong>MIQE 2.0 (Bustin et al. 2025, Clin Chem)</strong> is the first major revision — now requiring LOD/LOQ confidence intervals, mandatory raw-data sharing, and efficiency-corrected target quantities.</p>
+<p>RT-qPCR signal is <strong>logarithmic</strong>: every Cq unit represents a ~2-fold difference in starting material (at 100% efficiency). Small errors anywhere (1 μL pipetting, wrong reference gene, ignored efficiency) are exponentially amplified.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心原則：</strong>qPCR 數據的可信度取決於最薄弱的環節：RNA 完整性 (RIN ≥ 7)、reverse transcription 效率、PCR 效率 (90–110%)、reference gene 穩定性 (geNorm/NormFinder)、與 no-RT / NTC 對照。任何一項缺失，後續統計都是沙上城堡。</span>
+<span data-lang="en"><strong>Core principle:</strong> qPCR reliability is determined by the weakest link — RNA integrity (RIN ≥ 7), RT efficiency, PCR efficiency (90–110%), reference-gene stability (geNorm/NormFinder), and no-RT / NTC controls. Without any one of these, downstream statistics are castles in the sand.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心概念" data-en="CORE CONCEPTS">核心概念</div>
+<h2 data-zh="一、四個必須懂的數字" data-en="I. Four numbers you must understand">一、四個必須懂的數字</h2>
+<div class="card-grid cols-2">
+<div class="card"><div class="card-icon">📈</div><h4>Cq (Quantification Cycle)</h4>
+<div data-lang="zh"><p>螢光訊號超過閾值的循環數，等同 Ct。<strong>Cq 越小代表起始量越多</strong>（早期就放大到偵測閾值）。Cq 是指數空間的值，不可直接相減或平均，必須先轉成 2^(-Cq) 線性化。</p></div>
+<div data-lang="en"><p>Cycle at which fluorescence crosses the threshold (= Ct). <strong>Lower Cq = more starting material</strong>. Cq lives in log space — never subtract or average raw Cq values; transform to 2^(-Cq) first.</p></div>
+</div>
+<div class="card"><div class="card-icon">⚡</div><h4>PCR Efficiency (E)</h4>
+<div data-lang="zh"><p>由 10 倍序列稀釋標準曲線計算：<code>E = 10^(−1/slope) − 1</code>。理想 slope = −3.32（100% 效率）。可接受範圍 90–110%。效率差 5% 在 30 個循環會放大成 4 倍誤差。</p></div>
+<div data-lang="en"><p>Derived from 10-fold dilution standard curve: <code>E = 10^(−1/slope) − 1</code>. Ideal slope = −3.32 (100% efficiency). Acceptable range 90–110%. A 5% efficiency difference compounds to ~4× error after 30 cycles.</p></div>
+</div>
+<div class="card"><div class="card-icon">📐</div><h4>R² of standard curve</h4>
+<div data-lang="zh"><p>反映劑量反應的線性度。MIQE 2.0 要求 <strong>R² ≥ 0.98</strong>，並覆蓋至少 5 個 10 倍稀釋點。R² 高但 slope 偏離 −3.32，仍代表效率有問題。</p></div>
+<div data-lang="en"><p>Linearity of dose-response. MIQE 2.0 requires <strong>R² ≥ 0.98</strong> across ≥5 ten-fold dilution points. High R² but slope ≠ −3.32 still indicates an efficiency problem.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎯</div><h4>LOD / LOQ</h4>
+<div data-lang="zh"><p><strong>LOD</strong>：能可靠偵測（≥95%）的最低濃度。<strong>LOQ</strong>：能可靠定量（CV ≤ 25%）的最低濃度。MIQE 2.0 強制報告兩者的 95% CI 而非單一數字。</p></div>
+<div data-lang="en"><p><strong>LOD</strong>: lowest concentration detected reliably (≥95%). <strong>LOQ</strong>: lowest concentration quantified with CV ≤ 25%. MIQE 2.0 now requires 95% CIs for both, not just point estimates.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="計算法" data-en="QUANTIFICATION METHODS">計算法</div>
+<h2 data-zh="二、相對 vs 絕對定量" data-en="II. Relative vs absolute quantification">二、相對 vs 絕對定量</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="方法" data-en="Method">方法</th><th data-zh="原理" data-en="Principle">原理</th><th data-zh="適用情境" data-en="When to use">適用情境</th><th data-zh="關鍵假設" data-en="Key assumption">關鍵假設</th></tr></thead>
+<tbody>
+<tr><td><strong>ΔΔCt (Livak)</strong></td><td data-zh="2^(−ΔΔCt)，先扣 reference gene 再扣對照組" data-en="2^(−ΔΔCt); normalize to reference gene, then to control">2^(−ΔΔCt)</td><td data-zh="目標與 reference 效率近似" data-en="Target and reference efficiency similar">效率相近</td><td data-zh="E_target ≈ E_ref ≈ 100%，差距 &lt;5%" data-en="E_target ≈ E_ref ≈ 100%, &lt;5% gap">差距 &lt;5%</td></tr>
+<tr><td><strong>Pfaffl</strong></td><td data-zh="效率校正版 ΔΔCt：(E_t)^ΔCt_t / (E_r)^ΔCt_r" data-en="Efficiency-corrected: (E_t)^ΔCt_t / (E_r)^ΔCt_r">效率校正</td><td data-zh="效率有差異但已知" data-en="Different but known efficiencies">已知效率</td><td data-zh="每對引子皆有量測效率" data-en="Measured E for every primer pair">已量測 E</td></tr>
+<tr><td><strong>Standard curve</strong></td><td data-zh="未知樣品內插標準品濃度" data-en="Interpolate from standard dilution series">標準曲線內插</td><td data-zh="需要絕對濃度（拷貝數/μL）" data-en="When absolute concentration needed">絕對量化</td><td data-zh="標準品純度與穩定性" data-en="Standard purity and stability">純度可靠</td></tr>
+<tr><td><strong>dPCR (Digital)</strong></td><td data-zh="樣品分隔至上萬個反應，泊松分布計拷貝數" data-en="Partitioning + Poisson; count positives">分隔+泊松</td><td data-zh="低拷貝、稀有變異、無需標準曲線" data-en="Low copies, rare variants, no curve needed">絕對定量</td><td data-zh="dMIQE 2020 規範" data-en="dMIQE 2020 reporting">符合 dMIQE</td></tr>
+</tbody></table>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="PCR 效率對 ΔΔCt 結果的影響" data-en="How PCR efficiency biases ΔΔCt">PCR 效率對 ΔΔCt 結果的影響</h2>
+<div data-lang="zh"><p>拖動下方滑桿：當 target 與 reference 的效率不一致時，ΔΔCt 報告的「fold change」會偏離真值。看看 5% 的效率差距如何在 25 個循環後變成多大的誤差。</p></div>
+<div data-lang="en"><p>Drag the sliders below. When target and reference efficiencies differ, ΔΔCt-reported "fold change" deviates from the truth. See how a 5% efficiency gap balloons after 25 cycles.</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span data-zh="Target gene 效率 E_t" data-en="Target efficiency E_t">Target E_t</span> <span id="valEt">100%</span></label><input type="range" id="sliderEt" min="80" max="115" value="100" step="1"></div>
+<div class="slider-group"><label><span data-zh="Reference gene 效率 E_r" data-en="Reference efficiency E_r">Reference E_r</span> <span id="valEr">100%</span></label><input type="range" id="sliderEr" min="80" max="115" value="100" step="1"></div>
+<div class="slider-group"><label><span data-zh="真實 fold change" data-en="True fold change">真實 fold change</span> <span id="valFC">2.0×</span></label><input type="range" id="sliderFC" min="1" max="10" value="2" step="0.1"></div>
+<div class="sim-stats"><span class="sim-stat pass" id="statReport">—</span><span class="sim-stat fail" id="statBias">—</span></div>
+<div class="chart-container"><canvas id="qpcrChart"></canvas></div>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center;" data-zh="X：循環數 (cycles) | Y：螢光訊號（log 線性區段）" data-en="X: cycles | Y: fluorescence (log-linear region)">X：循環數 | Y：螢光訊號</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="三、R 與 Python 實作 ΔΔCt" data-en="III. Implementing ΔΔCt in R &amp; Python">三、R 與 Python 實作 ΔΔCt</h2>
+<div class="code-tabs">
+<div class="code-tab-btns">
+  <button class="code-tab-btn active" data-tab="r1">R</button>
+  <button class="code-tab-btn" data-tab="py1">Python</button>
+</div>
+<div class="code-tab-content active" id="r1"><pre><span class="comment"># ΔΔCt + Pfaffl 效率校正示例</span>
+<span class="kw">library</span>(tidyverse)
+df &lt;- <span class="func">read_csv</span>(<span class="str">"qpcr_raw.csv"</span>)   <span class="comment"># 欄位：sample, gene, group, Cq</span>
+
+<span class="comment"># 1. 對每樣品計算 ΔCt = Cq_target − Cq_reference</span>
+dCt &lt;- df %&gt;% <span class="func">pivot_wider</span>(names_from=gene, values_from=Cq) %&gt;%
+  <span class="func">mutate</span>(dCt = TargetGene - <span class="func">rowMeans</span>(<span class="func">across</span>(<span class="func">c</span>(GAPDH, ACTB, HPRT1))))   <span class="comment"># 多 reference 平均</span>
+
+<span class="comment"># 2. ΔΔCt = ΔCt_treated − mean(ΔCt_control)</span>
+ctrl_mean &lt;- <span class="func">mean</span>(dCt$dCt[dCt$group==<span class="str">"control"</span>])
+dCt &lt;- dCt %&gt;% <span class="func">mutate</span>(ddCt = dCt - ctrl_mean,
+                       FC   = <span class="num">2</span>^(-ddCt))
+
+<span class="comment"># 3. Pfaffl 校正版（已量測 E_t, E_r）</span>
+E_t &lt;- <span class="num">1.95</span>; E_r &lt;- <span class="num">2.02</span>   <span class="comment"># 從標準曲線計算: 10^(-1/slope)</span>
+dCt$FC_pfaffl &lt;- (E_t^(ctrl_mean - dCt$dCt)) / (E_r^<span class="num">0</span>)
+</pre></div>
+<div class="code-tab-content" id="py1"><pre><span class="kw">import</span> pandas <span class="kw">as</span> pd, numpy <span class="kw">as</span> np
+
+df = pd.<span class="func">read_csv</span>(<span class="str">"qpcr_raw.csv"</span>)
+wide = df.<span class="func">pivot</span>(index=[<span class="str">"sample"</span>,<span class="str">"group"</span>], columns=<span class="str">"gene"</span>, values=<span class="str">"Cq"</span>).<span class="func">reset_index</span>()
+
+<span class="comment"># 多 reference 取算術平均（geNorm 推薦至少 2-3 個穩定基因）</span>
+ref_cols = [<span class="str">"GAPDH"</span>, <span class="str">"ACTB"</span>, <span class="str">"HPRT1"</span>]
+wide[<span class="str">"Cq_ref"</span>] = wide[ref_cols].<span class="func">mean</span>(axis=<span class="num">1</span>)
+wide[<span class="str">"dCt"</span>]    = wide[<span class="str">"TargetGene"</span>] - wide[<span class="str">"Cq_ref"</span>]
+
+ctrl_mean = wide.<span class="func">loc</span>[wide.group==<span class="str">"control"</span>, <span class="str">"dCt"</span>].<span class="func">mean</span>()
+wide[<span class="str">"ddCt"</span>] = wide[<span class="str">"dCt"</span>] - ctrl_mean
+wide[<span class="str">"FC"</span>]   = <span class="num">2</span> ** (-wide[<span class="str">"ddCt"</span>])
+
+<span class="comment"># 統計：log2(FC) 才適合 t-test（線性化避免 fold change 的偏態）</span>
+<span class="kw">from</span> scipy <span class="kw">import</span> stats
+log2fc = np.<span class="func">log2</span>(wide.FC)
+stats.<span class="func">ttest_ind</span>(log2fc[wide.group==<span class="str">"treated"</span>], log2fc[wide.group==<span class="str">"control"</span>])
+</pre></div>
+</div>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>關鍵：</strong>統計檢定一律在 log2(FC) 空間執行（或直接用 ΔCt）。FC 本身為對數常態分佈，t-test 假設不成立。報告時可再 antilog 回 fold change。</span>
+<span data-lang="en"><strong>Crucial:</strong> Always run statistical tests on log2(FC) (or on ΔCt directly). FC itself is log-normally distributed, violating t-test assumptions. Antilog back to FC only when reporting.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="決策樹" data-en="DECISION TREE">決策樹</div>
+<h2 data-zh="四、Reference Gene 選擇流程" data-en="IV. Choosing reference genes">四、Reference Gene 選擇流程</h2>
+<div class="decision-tree">
+<h4 data-zh="如何選擇 housekeeping / reference gene？" data-en="How to pick a reference gene?">如何選擇 housekeeping / reference gene？</h4>
+<div class="dt-node"><span class="dt-q">Q1.</span><span class="dt-arrow">→</span><span data-zh="<strong>是否文獻已驗證適用你的組織/處理條件？</strong>" data-en="<strong>Has it been validated for your tissue and treatment?</strong>"></span></div>
+<div class="dt-node"><span class="dt-q">否</span><span class="dt-arrow">→</span><span data-zh="先跑 geNorm / NormFinder / BestKeeper 評估 8-12 個候選 (GAPDH, ACTB, HPRT1, RPL13A, B2M, TBP, YWHAZ…)，取 M-value &lt; 0.5 的前 3 個" data-en="Test 8–12 candidates with geNorm / NormFinder / BestKeeper; pick top-3 with M-value &lt; 0.5"></span></div>
+<div class="dt-node"><span class="dt-q">Q2.</span><span class="dt-arrow">→</span><span data-zh="<strong>實驗有缺氧、分化、代謝壓力？</strong>" data-en="<strong>Hypoxia, differentiation, metabolic stress?</strong>"></span></div>
+<div class="dt-node"><span class="dt-q">是</span><span class="dt-arrow">→</span><span data-zh="GAPDH 與 β-actin 在這些條件下會顯著變動，務必改用多 reference 平均或 total RNA spike-in" data-en="GAPDH and β-actin change significantly here; use multi-reference geometric mean or total-RNA spike-in"></span></div>
+<div class="dt-node"><span class="dt-q">Q3.</span><span class="dt-arrow">→</span><span data-zh="<strong>是否能取得絕對拷貝數？</strong>" data-en="<strong>Need absolute copy number?</strong>"></span></div>
+<div class="dt-node"><span class="dt-q">是</span><span class="dt-arrow">→</span><span data-zh="改用 dPCR（依 dMIQE 2020），無需 reference gene 與標準曲線" data-en="Use dPCR (per dMIQE 2020) — no reference gene or standard curve required"></span></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="常見陷阱" data-en="COMMON PITFALLS">常見陷阱</div>
+<h2 data-zh="五、必避的五個錯誤" data-en="V. Five mistakes to avoid">五、必避的五個錯誤</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>❌ <span data-zh="單一 GAPDH 當 reference" data-en="Single GAPDH as reference">單一 GAPDH 當 reference</span></h4>
+<div data-lang="zh"><p>GAPDH 在低氧、發炎、分化條件下會變動。MIQE 與 Vandesompele 2002 都要求 <strong>至少 2 個</strong> 已驗證 reference gene。</p></div>
+<div data-lang="en"><p>GAPDH changes under hypoxia, inflammation, differentiation. MIQE and Vandesompele 2002 both require <strong>≥2 validated</strong> reference genes.</p></div>
+</div>
+<div class="card"><h4>❌ <span data-zh="忽略 PCR 效率" data-en="Ignoring PCR efficiency">忽略 PCR 效率</span></h4>
+<div data-lang="zh"><p>每對引子都應跑標準曲線確認 E∈[90%,110%]。直接套 ΔΔCt 而效率差 10%，30 cycle 後誤差可達 16 倍。</p></div>
+<div data-lang="en"><p>Every primer pair needs a standard curve confirming E∈[90%,110%]. ΔΔCt with 10% efficiency gap → up to 16× error after 30 cycles.</p></div>
+</div>
+<div class="card"><h4>❌ <span data-zh="缺 no-RT / NTC 對照" data-en="Missing no-RT / NTC controls">缺 no-RT / NTC 對照</span></h4>
+<div data-lang="zh"><p>無 no-RT 無法區分訊號來自 mRNA 或 gDNA 汙染；無 NTC 無法偵測 primer-dimer 或 reagent 汙染。</p></div>
+<div data-lang="en"><p>Without no-RT, you cannot distinguish mRNA signal from gDNA contamination; without NTC, you cannot detect primer-dimers or reagent contamination.</p></div>
+</div>
+<div class="card"><h4>❌ <span data-zh="把 technical replicate 當生物 n" data-en="Confusing technical with biological replicates">技術重複當生物 n</span></h4>
+<div data-lang="zh"><p>3 個技術 well ≠ n=3。生物 n 是獨立樣本/動物/培養盤，技術重複只反映管內變異。統計報告須清楚標示。</p></div>
+<div data-lang="en"><p>Three technical wells ≠ n=3. Biological n means independent samples/animals/plates; technical replicates only capture pipetting variation. State both clearly.</p></div>
+</div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗 (3 題)" data-en="🎯 Quick Quiz (3 questions)">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="標準曲線 slope = −3.10，計算的 PCR 效率最接近？" data-en="Standard curve slope = −3.10. What is the PCR efficiency?">標準曲線 slope = −3.10，計算的 PCR 效率最接近？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">90%</div>
+<div class="quiz-opt" data-correct="false">100%</div>
+<div class="quiz-opt" data-correct="true">110%</div>
+<div class="quiz-opt" data-correct="false">120%</div>
+</div>
+<div class="quiz-feedback"></div></div>
+
+<div class="quiz-q"><p>2. <span data-zh="下列何者是 MIQE 2.0 (2025) 與原始 MIQE 2009 的差異？" data-en="Which is a new requirement in MIQE 2.0 (2025) vs original MIQE 2009?">下列何者是 MIQE 2.0 與原版的新增要求？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="必須報告 R²" data-en="Reporting R²">必須報告 R²</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="LOD / LOQ 須報告 95% CI 而非單一數字" data-en="LOD / LOQ must include 95% CI, not point estimates">LOD/LOQ 報告 95% CI</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="須使用 SYBR Green 染料" data-en="Must use SYBR Green">須用 SYBR Green</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="禁止使用 dPCR" data-en="dPCR is prohibited">禁止使用 dPCR</span></div>
+</div>
+<div class="quiz-feedback"></div></div>
+
+<div class="quiz-q"><p>3. <span data-zh="統計檢定 fold change 時應用何種轉換？" data-en="Which transformation is required before statistical tests on FC?">統計檢定 fold change 應用何種轉換？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="平方根" data-en="Square root">平方根</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="log2 (或直接用 ΔCt)" data-en="log2 (or use ΔCt directly)">log2 / ΔCt</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="倒數 1/FC" data-en="Reciprocal 1/FC">1/FC 倒數</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="不用轉換" data-en="No transformation">不用轉換</span></div>
+</div>
+<div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<div class="placeholder"></div>
+<a href="western-blot.html"><span class="nav-dir" data-zh="下一章 →" data-en="Next →">下一章 →</span><span class="nav-title" data-zh="Step 2 · Western Blot 定量" data-en="Step 2 · Western Blot">Step 2 · Western Blot 定量</span></a>
+</nav>
+
+</main>
+<footer class="site-footer">© Charlene — Quantitative Data &amp; Analysis Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+// Progress bar
+window.addEventListener('scroll',()=>{const h=document.documentElement;const s=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;document.getElementById('progressBar').style.width=s+'%'});
+// Code tabs
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+// Quiz
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！ Correct!':'✗ 再想想 / 正解已標示';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+// qPCR efficiency simulator
+const ctx=document.getElementById('qpcrChart');
+const chart=new Chart(ctx,{type:'line',data:{labels:Array.from({length:36},(_,i)=>i),datasets:[
+{label:'Target',data:[],borderColor:'#3730a3',backgroundColor:'rgba(55,48,163,.1)',tension:.3,pointRadius:0},
+{label:'Reference',data:[],borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.1)',tension:.3,pointRadius:0}
+]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{title:{display:true,text:'log10(Fluorescence)'}},x:{title:{display:true,text:'Cycle'}}}}});
+function sim(){
+  const Et=document.getElementById('sliderEt').value/100;
+  const Er=document.getElementById('sliderEr').value/100;
+  const trueFC=parseFloat(document.getElementById('sliderFC').value);
+  document.getElementById('valEt').textContent=(Et*100).toFixed(0)+'%';
+  document.getElementById('valEr').textContent=(Er*100).toFixed(0)+'%';
+  document.getElementById('valFC').textContent=trueFC.toFixed(1)+'×';
+  const t=[],r=[],initT=1, initR=1;
+  for(let c=0;c<36;c++){t.push(Math.log10(initT*Math.pow(1+Et,c)));r.push(Math.log10(initR*Math.pow(1+Er,c)));}
+  chart.data.datasets[0].data=t; chart.data.datasets[1].data=r; chart.update();
+  // Report: assume true Cq diff = log2(trueFC). Simulate Cq from efficiency
+  const CqTrue_t = Math.log(1e4/(initT*trueFC))/Math.log(1+Et);   // target reaches threshold (1e4)
+  const CqTrue_r = Math.log(1e4/initR)/Math.log(1+Er);
+  const ddCt = (CqTrue_t - CqTrue_r) - (Math.log(1e4/initT)/Math.log(1+Et) - Math.log(1e4/initR)/Math.log(1+Er));
+  const FCreport = Math.pow(2,-ddCt);
+  document.getElementById('statReport').textContent='Reported FC ≈ '+FCreport.toFixed(2)+'×';
+  const bias=((FCreport-trueFC)/trueFC*100);
+  const biasEl=document.getElementById('statBias');
+  biasEl.textContent='Bias = '+bias.toFixed(1)+'%';
+  biasEl.className='sim-stat '+(Math.abs(bias)<10?'pass':'fail');
+}
+['sliderEt','sliderEr','sliderFC'].forEach(id=>document.getElementById(id).oninput=sim);sim();
+</script>
+</body></html>

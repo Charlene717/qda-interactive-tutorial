@@ -1,0 +1,222 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 14: AI / ML for Quantification — QDA</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="QDA Tutorial">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li><li><a href="western-blot.html">WB</a></li><li><a href="elisa.html">ELISA</a></li><li><a href="flow-cytometry.html">Flow</a></li><li><a href="image-quant.html">Image</a></li><li><a href="eda.html">EDA</a></li><li><a href="hypothesis-testing.html">Tests</a></li><li><a href="multiple-testing.html">MTC</a></li><li><a href="regression.html">Regr.</a></li><li><a href="effect-size.html">ES/Power</a></li><li><a href="omics-quant.html">Omics</a></li><li><a href="visualization.html">Viz</a></li><li><a href="reproducibility.html">Repro.</a></li><li><a href="ai-ml.html" class="active">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 14 / 14</div>
+<h1 data-zh="AI / ML 在量化分析的應用" data-en="AI / ML for Quantitative Analysis">AI / ML 量化分析</h1>
+<p class="subtitle" data-lang="zh">Cross-validation、ROC vs PR-AUC、SHAP、TRIPOD+AI——避開 data leakage 與外部驗證陷阱。</p>
+<p class="subtitle" data-lang="en">Cross-validation, ROC vs PR-AUC, SHAP, TRIPOD+AI — avoid data leakage and external validation traps.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="ML 量化結果為什麼常常無法臨床落地？" data-en="Why most ML quantification doesn't translate clinically">為什麼 ML 結果常無法臨床落地？</h2>
+<div data-lang="zh"><p>2024 年 <strong>TRIPOD+AI (Collins et al., <em>BMJ</em>)</strong> 取代 TRIPOD 2015，27 項清單同時涵蓋傳統回歸與機器學習，新增公平性 (fairness)、資料來源、訓練流程透明度。2025 年 <strong>STARD-AI (Salim et al., <em>Nature Medicine</em>)</strong> 為診斷準確度 AI 研究新增 18 項要件。CLAIM (Mongan 2020) 則特化於醫學影像 AI。</p>
+<p>類別不平衡（疾病盛行率 &lt; 10%）時 ROC-AUC 過度樂觀，應改用 <strong>PR-AUC</strong> (Saito & Rehmsmeier 2015, <em>PLOS ONE</em>)。校準（calibration）是 Van Calster 2019 (<em>BMC Medicine</em>) 強調的「預測分析的阿基里斯腳跟」。SHAP (Lundberg & Lee 2017) 提供模型解釋，但<strong>不可詮釋為因果效應</strong>。</p></div>
+<div data-lang="en"><p><strong>TRIPOD+AI 2024 (Collins et al., <em>BMJ</em>)</strong> replaces TRIPOD 2015 — its 27-item checklist covers regression and ML alike, adding fairness, data provenance, and training transparency. <strong>STARD-AI 2025 (Salim et al., <em>Nature Medicine</em>)</strong> adds 18 AI-specific items to STARD. CLAIM (Mongan 2020) is the medical-imaging-AI guideline.</p>
+<p>With class imbalance (prevalence &lt; 10%), ROC-AUC is overly optimistic — use <strong>PR-AUC</strong> (Saito & Rehmsmeier 2015, <em>PLOS ONE</em>). Calibration is Van Calster 2019's "Achilles' heel of predictive analytics." SHAP (Lundberg & Lee 2017) explains predictions but <strong>cannot be read as causal</strong>.</p></div>
+<div class="callout danger"><span class="callout-icon">🚨</span><div><span data-lang="zh"><strong>四大 data leakage 來源：</strong>(1) 在分 train/test 之前做 feature selection / oversampling；(2) 病人層級資料以樣本層級切分；(3) 用同院 k-fold 充當「外部驗證」；(4) 把時間序列以隨機 k-fold 切（應用 time-based split）。</span><span data-lang="en"><strong>Four data-leakage sources:</strong> (1) Feature selection / oversampling before train/test split; (2) Patient-level data split at sample level; (3) Same-site k-fold disguised as "external validation"; (4) Time series with random k-fold (use time-based split).</span></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心概念" data-en="CORE CONCEPTS">核心概念</div>
+<h2 data-zh="一、效能指標選擇" data-en="I. Picking performance metrics">一、效能指標選擇</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="場景" data-en="Setting">場景</th><th data-zh="主要指標" data-en="Primary metric">主要指標</th><th data-zh="輔助指標" data-en="Supplementary">輔助</th><th data-zh="避免單獨用" data-en="Avoid as sole metric">避免</th></tr></thead>
+<tbody>
+<tr><td data-zh="平衡分類" data-en="Balanced classification">平衡分類</td><td>ROC-AUC, F1</td><td>Accuracy, Brier score</td><td data-zh="-" data-en="-">-</td></tr>
+<tr><td data-zh="極不平衡 (盛行率 &lt; 10%)" data-en="Highly imbalanced (prev. <10%)">極不平衡</td><td><strong>PR-AUC</strong></td><td data-zh="Sensitivity, PPV at fixed threshold" data-en="Sensitivity, PPV at fixed threshold">敏感度+PPV</td><td>Accuracy, ROC-AUC alone</td></tr>
+<tr><td data-zh="迴歸（連續）" data-en="Regression">迴歸</td><td>RMSE, MAE</td><td>R², Pearson r</td><td>R² alone</td></tr>
+<tr><td data-zh="校準" data-en="Calibration">校準</td><td>Brier, calibration plot</td><td>Calibration slope / intercept</td><td>Hosmer-Lemeshow alone</td></tr>
+<tr><td data-zh="多類別" data-en="Multi-class">多類別</td><td>Macro F1, macro AUC</td><td>Confusion matrix</td><td>Overall accuracy alone</td></tr>
+</tbody></table>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="ROC 與 PR 在不平衡資料的差異" data-en="ROC vs PR under class imbalance">不平衡資料下 ROC 騙人</h2>
+<div data-lang="zh"><p>調整正類盛行率，觀察 ROC-AUC 與 PR-AUC 變化。同一模型在 50% 盛行率與 1% 盛行率下，ROC-AUC 幾乎不變，但 PR-AUC 大幅下降——這才是真實情境的可用度。</p></div>
+<div data-lang="en"><p>Adjust positive prevalence — ROC-AUC barely budges while PR-AUC plummets at low prevalence. PR-AUC reflects real-world utility.</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span data-zh="正類盛行率" data-en="Positive prevalence">盛行率</span><span id="valPrev">10%</span></label><input type="range" id="sliderPrev" min="1" max="50" value="10"></div>
+<div class="slider-group"><label><span data-zh="模型「分離度」 (AUC 對應)" data-en="Model separability">模型分離度</span><span id="valSep">0.85</span></label><input type="range" id="sliderSep" min="0.5" max="0.99" value="0.85" step="0.01"></div>
+<div class="sim-stats"><span class="sim-stat pass" id="statROC">—</span><span class="sim-stat fail" id="statPR">—</span></div>
+<div class="chart-container"><canvas id="mlChart"></canvas></div>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center;" data-zh="左：ROC curve | 右：PR curve" data-en="Left: ROC | Right: PR">左：ROC | 右：PR</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式碼" data-en="CODE">程式碼</div>
+<h2 data-zh="二、無 data leakage 的 cross-validation 流程" data-en="II. Leak-free cross-validation">二、無 leakage 的 CV 流程</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" data-tab="r14">R (tidymodels)</button><button class="code-tab-btn" data-tab="py14">Python (sklearn)</button></div>
+<div class="code-tab-content active" id="r14"><pre><span class="kw">library</span>(tidymodels); <span class="kw">library</span>(themis)
+
+<span class="comment"># 1. 病人層級分組切分</span>
+splits &lt;- <span class="func">group_initial_split</span>(df, group=patient_id, prop=<span class="num">0.8</span>)
+train &lt;- <span class="func">training</span>(splits); test &lt;- <span class="func">testing</span>(splits)
+
+<span class="comment"># 2. recipe：所有 preprocessing 包進 pipeline（避免 leakage）</span>
+rec &lt;- <span class="func">recipe</span>(outcome ~ ., data=train) %&gt;%
+  <span class="func">step_normalize</span>(<span class="func">all_numeric_predictors</span>()) %&gt;%
+  <span class="func">step_smote</span>(outcome)        <span class="comment"># 注意：在 CV fold 內才做 SMOTE</span>
+
+<span class="comment"># 3. CV：分組 k-fold</span>
+folds &lt;- <span class="func">group_vfold_cv</span>(train, group=patient_id, v=<span class="num">5</span>)
+
+<span class="comment"># 4. 模型 + workflow</span>
+mod &lt;- <span class="func">logistic_reg</span>(penalty=<span class="func">tune</span>(), mixture=<span class="num">1</span>) %&gt;% <span class="func">set_engine</span>(<span class="str">"glmnet"</span>)
+wf  &lt;- <span class="func">workflow</span>() %&gt;% <span class="func">add_recipe</span>(rec) %&gt;% <span class="func">add_model</span>(mod)
+
+<span class="comment"># 5. 調參 + 評估（PR-AUC + ROC + Brier）</span>
+res &lt;- <span class="func">tune_grid</span>(wf, resamples=folds, metrics=<span class="func">metric_set</span>(pr_auc, roc_auc, brier_class))
+best &lt;- <span class="func">select_best</span>(res, metric=<span class="str">"pr_auc"</span>)
+
+<span class="comment"># 6. 外部驗證（不同醫院/不同年份）</span>
+final &lt;- <span class="func">finalize_workflow</span>(wf, best) %&gt;% <span class="func">fit</span>(train)
+external_metrics &lt;- final %&gt;% <span class="func">predict</span>(ext_df, type=<span class="str">"prob"</span>) %&gt;% <span class="func">bind_cols</span>(ext_df)
+</pre></div>
+<div class="code-tab-content" id="py14"><pre><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> GroupKFold
+<span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> Pipeline
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> StandardScaler
+<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> LogisticRegression
+<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> roc_auc_score, average_precision_score, brier_score_loss
+<span class="kw">from</span> imblearn.pipeline <span class="kw">import</span> Pipeline <span class="kw">as</span> ImbPipeline
+<span class="kw">from</span> imblearn.over_sampling <span class="kw">import</span> SMOTE
+
+<span class="comment"># 1. 病人層級分組 CV</span>
+gkf = <span class="func">GroupKFold</span>(n_splits=<span class="num">5</span>)
+groups = df[<span class="str">"patient_id"</span>]
+
+<span class="comment"># 2. Pipeline：scaling + SMOTE + model 一起包，避免 fold 間 leakage</span>
+pipe = <span class="func">ImbPipeline</span>([
+    (<span class="str">"scaler"</span>, <span class="func">StandardScaler</span>()),
+    (<span class="str">"smote"</span>,  <span class="func">SMOTE</span>(random_state=<span class="num">0</span>)),       <span class="comment"># 在 fold 內才合成樣本</span>
+    (<span class="str">"clf"</span>,    <span class="func">LogisticRegression</span>(penalty=<span class="str">"l1"</span>, solver=<span class="str">"saga"</span>, max_iter=<span class="num">5000</span>))
+])
+
+<span class="comment"># 3. CV 評估</span>
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> cross_validate
+res = <span class="func">cross_validate</span>(pipe, X, y, groups=groups, cv=gkf,
+                     scoring=[<span class="str">"roc_auc"</span>,<span class="str">"average_precision"</span>,<span class="str">"neg_brier_score"</span>])
+
+<span class="comment"># 4. 訓練全集 → 外部驗證</span>
+pipe.<span class="func">fit</span>(X, y)
+prob = pipe.<span class="func">predict_proba</span>(X_ext)[:, <span class="num">1</span>]
+print(<span class="str">"External PR-AUC:"</span>, <span class="func">average_precision_score</span>(y_ext, prob))
+print(<span class="str">"Brier:"</span>, <span class="func">brier_score_loss</span>(y_ext, prob))
+
+<span class="comment"># 5. SHAP 解釋（小心：相關 ≠ 因果）</span>
+<span class="kw">import</span> shap
+expl = shap.<span class="func">LinearExplainer</span>(pipe.named_steps[<span class="str">"clf"</span>], X)
+sv   = expl(X[:<span class="num">100</span>])
+shap.<span class="func">summary_plot</span>(sv, X[:<span class="num">100</span>])
+</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="常見陷阱" data-en="COMMON PITFALLS">常見陷阱</div>
+<h2 data-zh="三、生醫 ML 常見錯誤" data-en="III. Biomedical ML pitfalls">三、生醫 ML 常見錯誤</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>❌ <span data-zh="Preprocessing 前先切" data-en="Preprocessing before split">先 preprocess 才切</span></h4><div data-lang="zh"><p>把整體資料一次 scaling/PCA/SMOTE 再切 train/test → test 已「看過」train 統計，AUC 被高估。</p></div><div data-lang="en"><p>Whole-set scaling/PCA/SMOTE before split → test has "seen" train statistics; AUC inflated.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="同院 CV 充當外部驗證" data-en="Same-site CV as external validation">同院 CV 當外部</span></h4><div data-lang="zh"><p>「外部」必須是不同醫院、不同時期或不同人群。同院只能稱 internal validation。</p></div><div data-lang="en"><p>"External" requires a different hospital, era, or population. Same-site CV is internal validation only.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="SHAP = 因果" data-en="SHAP as causal">SHAP 當因果</span></h4><div data-lang="zh"><p>SHAP 解釋的是模型如何使用特徵，不是特徵對結果的因果效應。需 do-calculus / 介入實驗才能談因果。</p></div><div data-lang="en"><p>SHAP explains model use, not causal effect on the outcome. Causality requires do-calculus or interventional experiments.</p></div></div>
+<div class="card"><h4>❌ <span data-zh="忽略校準" data-en="Ignoring calibration">忽略 calibration</span></h4><div data-lang="zh"><p>AUC 高不等於預測機率可信。臨床決策需 reliability diagram + Brier score；必要時做 Platt / isotonic 校準。</p></div><div data-lang="en"><p>High AUC ≠ trustworthy probabilities. Clinical decisions need reliability diagrams + Brier; apply Platt / isotonic if miscalibrated.</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎯 章末小測驗" data-en="🎯 Quick Quiz">🎯 章末小測驗</h3>
+<div class="quiz-q"><p>1. <span data-zh="疾病盛行率 2% 的二元分類，主要效能指標應選？" data-en="Disease prevalence 2% — primary metric?">盛行率 2% 用？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">Accuracy</div>
+<div class="quiz-opt" data-correct="false">ROC-AUC alone</div>
+<div class="quiz-opt" data-correct="true">PR-AUC</div>
+<div class="quiz-opt" data-correct="false">R²</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>2. <span data-zh="2024 取代 TRIPOD 2015 的最新規範？" data-en="2024 successor of TRIPOD 2015?">2024 ML 模型最新規範？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false">CONSORT-AI</div>
+<div class="quiz-opt" data-correct="true">TRIPOD+AI (BMJ 2024)</div>
+<div class="quiz-opt" data-correct="false">PRISMA-DTA</div>
+<div class="quiz-opt" data-correct="false">CLAIM</div>
+</div><div class="quiz-feedback"></div></div>
+<div class="quiz-q"><p>3. <span data-zh="避免 data leakage 的 CV 設置？" data-en="Leak-free CV setup?">避免 leakage 的 CV？</span></p>
+<div class="quiz-options">
+<div class="quiz-opt" data-correct="false"><span data-zh="先做 SMOTE 再切 train/test" data-en="SMOTE before split">先 SMOTE</span></div>
+<div class="quiz-opt" data-correct="true"><span data-zh="scaling/SMOTE 包進 fold 內 pipeline" data-en="Wrap scaling/SMOTE inside fold pipeline">Pipeline 內處理</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="隨機切 patient-level 資料" data-en="Random split of patient-level data">隨機切病人</span></div>
+<div class="quiz-opt" data-correct="false"><span data-zh="只用 train 評估" data-en="Evaluate on train">只 train</span></div>
+</div><div class="quiz-feedback"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="reproducibility.html"><span class="nav-dir">← 上一章</span><span class="nav-title" data-zh="Step 13 · 再現性與報告標準" data-en="Step 13 · Reproducibility &amp;amp; Reporting Standards">Step 13 · 再現性與報告標準</span></a>
+<a href="index.html"><span class="nav-dir">回到目錄 →</span><span class="nav-title" data-zh="教學首頁" data-en="Tutorial Hub">教學首頁</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — QDA Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'});
+document.querySelectorAll('.code-tab-btn').forEach(b=>b.onclick=()=>{const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector('#'+b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=()=>{const q=o.closest('.quiz-q');const fb=q.querySelector('.quiz-feedback');q.querySelectorAll('.quiz-opt').forEach(x=>{x.classList.remove('correct','wrong');x.style.pointerEvents='none'});const ok=o.dataset.correct==='true';o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelector('[data-correct="true"]').classList.add('correct');fb.textContent=ok?'✓ 正確！':'✗ 再想想';fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb')});
+
+const ctx=document.getElementById('mlChart');
+const chart=new Chart(ctx,{type:'line',data:{labels:[],datasets:[
+  {label:'ROC (TPR vs FPR)',data:[],borderColor:'#3730a3',backgroundColor:'rgba(55,48,163,.15)',fill:false,tension:.2,pointRadius:0,yAxisID:'y'},
+  {label:'PR (Precision vs Recall)',data:[],borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.15)',fill:false,tension:.2,pointRadius:0,yAxisID:'y'},
+  {label:'baseline',data:[],borderColor:'#cbd5e1',borderDash:[3,3],pointRadius:0}
+]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:1,title:{display:true,text:'metric'}},x:{title:{display:true,text:'cutoff (low→high)'}}}}});
+function sim(){
+  const prev=+document.getElementById('sliderPrev').value/100;
+  const sep =+document.getElementById('sliderSep').value;
+  document.getElementById('valPrev').textContent=(prev*100).toFixed(0)+'%';
+  document.getElementById('valSep').textContent=sep.toFixed(2);
+  // Simulate two normal distributions (positives shifted by k)
+  const N=2000, Npos=Math.round(N*prev), Nneg=N-Npos;
+  const k = 2*Math.sqrt(2)* (sep-0.5);    // d ≈ proxy
+  function randn(){let u=Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  const pos=Array.from({length:Npos},()=>randn()+k);
+  const neg=Array.from({length:Nneg},()=>randn());
+  const all=pos.map(s=>({s,y:1})).concat(neg.map(s=>({s,y:0})));
+  all.sort((a,b)=>b.s-a.s);
+  // ROC + PR points by varying threshold
+  let tp=0,fp=0,fn=Npos,tn=Nneg;
+  const fpr=[],tpr=[],prec=[],rec=[],labels=[];
+  for(let i=0;i<all.length;i++){
+    if(all[i].y===1){tp++;fn--;} else {fp++;tn--;}
+    fpr.push(fp/(fp+tn||1));tpr.push(tp/(tp+fn||1));
+    prec.push(tp/(tp+fp||1));rec.push(tp/(tp+fn||1));
+  }
+  // Build ROC dataset using fpr as x
+  const roc = fpr.map((x,i)=>({x:x,y:tpr[i]}));
+  const pr  = rec.map((x,i)=>({x:x,y:prec[i]}));
+  chart.data.labels = Array.from({length:roc.length},(_,i)=>i);
+  chart.data.datasets[0].data = roc;
+  chart.data.datasets[1].data = pr;
+  chart.data.datasets[2].data = [{x:0,y:prev},{x:1,y:prev}];
+  chart.options.scales.x = {min:0,max:1,title:{display:true,text:'FPR (ROC) / Recall (PR)'}};
+  chart.update();
+  // AUC approximations
+  let auc=0; for(let i=1;i<roc.length;i++)auc+=(roc[i].x-roc[i-1].x)*(roc[i].y+roc[i-1].y)/2;
+  let ap=0; for(let i=1;i<pr.length;i++)ap+=(pr[i].x-pr[i-1].x)*pr[i].y;
+  document.getElementById('statROC').textContent='ROC-AUC ≈ '+auc.toFixed(3);
+  document.getElementById('statPR').textContent='PR-AUC ≈ '+ap.toFixed(3);
+  document.getElementById('statPR').className='sim-stat '+(ap>0.5?'pass':'fail');
+}
+['sliderPrev','sliderSep'].forEach(id=>document.getElementById(id).oninput=sim);sim();
+</script>
+</body></html>

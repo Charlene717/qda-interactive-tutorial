@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Quantitative Data &amp; Analysis Interactive Tutorial</title>
+<meta name="description" content="Bilingual interactive tutorial covering qPCR, Western blot, ELISA, flow cytometry, image quantification, biostatistics, omics quantification, visualization, reproducibility and ML.">
+<link rel="stylesheet" href="styles.css"></head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>📊</span> <span data-zh="量化數據與分析" data-en="Quantitative Data Analysis">量化數據與分析</span></a>
+  <ul class="top-nav-links">
+    <li><a href="qpcr.html">qPCR</a></li>
+    <li><a href="western-blot.html">WB</a></li>
+    <li><a href="elisa.html">ELISA</a></li>
+    <li><a href="flow-cytometry.html">Flow</a></li>
+    <li><a href="image-quant.html">Image</a></li>
+    <li><a href="eda.html">EDA</a></li>
+    <li><a href="hypothesis-testing.html">Tests</a></li>
+    <li><a href="multiple-testing.html">MTC</a></li>
+    <li><a href="regression.html">Regr.</a></li>
+    <li><a href="effect-size.html">ES/Power</a></li>
+    <li><a href="omics-quant.html">Omics</a></li>
+    <li><a href="visualization.html">Viz</a></li>
+    <li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="ai-ml.html">ML</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<header class="hub-hero"><div style="position:relative;z-index:1;">
+<h1 data-zh="量化數據與分析 互動式教學" data-en="Quantitative Data &amp; Analysis Interactive Tutorial">量化數據與分析 互動式教學</h1>
+<p data-lang="zh">從一根 PCR 試管到一份統計報告——14 章帶你掌握生物醫學量化實驗、統計推論、組學定量與再現性報告，搭配 R + Python 雙語程式碼與互動模擬。</p>
+<p data-lang="en">From a single PCR tube to a publication-ready report — 14 chapters covering biomedical quantitative assays, statistical inference, omics quantification, and reproducible reporting, with R + Python code and interactive simulations.</p>
+</div></header>
+
+<h2 class="hub-section-title"><span>01</span> <span data-zh="實驗量化方法" data-en="Experimental Quantification">實驗量化方法</span></h2>
+<div class="hub-steps-grid">
+  <a href="qpcr.html" class="hub-card"><div class="hub-emoji">🧬</div><span class="step-num">Step 1</span><h3 data-zh="qPCR / RT-qPCR 定量" data-en="qPCR / RT-qPCR Quantification">qPCR / RT-qPCR 定量</h3><p data-lang="zh">Ct/Cq 值、ΔΔCt、標準曲線、PCR 效率、MIQE 規範與相對 vs 絕對定量。</p><p data-lang="en">Cq values, ΔΔCt, standard curves, PCR efficiency, MIQE guidelines, relative vs absolute quantification.</p></a>
+  <a href="western-blot.html" class="hub-card"><div class="hub-emoji">🧪</div><span class="step-num">Step 2</span><h3 data-zh="Western Blot 定量" data-en="Western Blot Quantification">Western Blot 定量</h3><p data-lang="zh">Band intensity、loading control、total protein normalization、線性動態範圍、Stain-free 與 housekeeping 比較。</p><p data-lang="en">Band intensity, loading controls, total-protein normalization, linear dynamic range, stain-free vs housekeeping.</p></a>
+  <a href="elisa.html" class="hub-card"><div class="hub-emoji">🟡</div><span class="step-num">Step 3</span><h3 data-zh="ELISA 與標準曲線" data-en="ELISA &amp; Standard Curves">ELISA 與標準曲線</h3><p data-lang="zh">4-PL / 5-PL 擬合、LOD/LOQ、回收率、CV%、平行性測試與抗體驗證。</p><p data-lang="en">4-PL / 5-PL fitting, LOD/LOQ, recovery, CV%, parallelism and antibody validation.</p></a>
+  <a href="flow-cytometry.html" class="hub-card"><div class="hub-emoji">🔬</div><span class="step-num">Step 4</span><h3 data-zh="Flow Cytometry 定量" data-en="Flow Cytometry">流式細胞術定量</h3><p data-lang="zh">補償、gating、MFI vs % positive、絕對細胞計數、spectral 解析與 FMO 控制。</p><p data-lang="en">Compensation, gating, MFI vs % positive, absolute cell counts, spectral unmixing and FMO controls.</p></a>
+  <a href="image-quant.html" class="hub-card"><div class="hub-emoji">🖼️</div><span class="step-num">Step 5</span><h3 data-zh="影像定量分析" data-en="Image Quantification">影像定量分析</h3><p data-lang="zh">ROI、強度量化、背景校正、共定位 (Pearson/Manders)、Fiji 與 CellProfiler 工作流。</p><p data-lang="en">ROI selection, intensity quantification, background correction, colocalization (Pearson/Manders), Fiji and CellProfiler workflows.</p></a>
+</div>
+
+<h2 class="hub-section-title"><span>02</span> <span data-zh="統計推論與分析" data-en="Statistical Inference">統計推論與分析</span></h2>
+<div class="hub-steps-grid">
+  <a href="eda.html" class="hub-card"><div class="hub-emoji">🔍</div><span class="step-num">Step 6</span><h3 data-zh="探索性資料分析 (EDA)" data-en="Exploratory Data Analysis">探索性資料分析</h3><p data-lang="zh">描述統計、分布視覺化、常態性檢定、離群值偵測與資料清理。</p><p data-lang="en">Descriptive stats, distribution plots, normality tests, outlier detection, data cleaning.</p></a>
+  <a href="hypothesis-testing.html" class="hub-card"><div class="hub-emoji">⚖️</div><span class="step-num">Step 7</span><h3 data-zh="假設檢定" data-en="Hypothesis Testing">假設檢定</h3><p data-lang="zh">t-test、Mann-Whitney、Wilcoxon、ANOVA、Kruskal-Wallis 與卡方檢定的選擇與解讀。</p><p data-lang="en">t-test, Mann-Whitney, Wilcoxon, ANOVA, Kruskal-Wallis, and chi-square — when to use and how to interpret.</p></a>
+  <a href="multiple-testing.html" class="hub-card"><div class="hub-emoji">🎯</div><span class="step-num">Step 8</span><h3 data-zh="多重比較與校正" data-en="Multiple Testing Correction">多重比較與校正</h3><p data-lang="zh">FWER vs FDR、Bonferroni、Holm、BH-FDR、Tukey HSD 與 q-value 在組學分析的應用。</p><p data-lang="en">FWER vs FDR, Bonferroni, Holm, BH-FDR, Tukey HSD, and q-values in omics-scale testing.</p></a>
+  <a href="regression.html" class="hub-card"><div class="hub-emoji">📈</div><span class="step-num">Step 9</span><h3 data-zh="回歸、相關與劑量反應" data-en="Regression &amp; Dose-Response">回歸與劑量反應</h3><p data-lang="zh">線性與非線性回歸、Pearson/Spearman、EC50/IC50、Hill 方程式與 Michaelis-Menten。</p><p data-lang="en">Linear and nonlinear regression, Pearson/Spearman, EC50/IC50, Hill equation, Michaelis-Menten kinetics.</p></a>
+  <a href="effect-size.html" class="hub-card"><div class="hub-emoji">💪</div><span class="step-num">Step 10</span><h3 data-zh="效應量與樣本數計算" data-en="Effect Size &amp; Power">效應量與樣本數</h3><p data-lang="zh">Cohen's d、η²、OR/RR、信賴區間、Power analysis 與 a priori 樣本數計算。</p><p data-lang="en">Cohen's d, η², OR/RR, confidence intervals, power analysis, and a priori sample size calculations.</p></a>
+</div>
+
+<h2 class="hub-section-title"><span>03</span> <span data-zh="進階主題" data-en="Advanced Topics">進階主題</span></h2>
+<div class="hub-steps-grid">
+  <a href="omics-quant.html" class="hub-card"><div class="hub-emoji">🧮</div><span class="step-num">Advanced</span><h3 data-zh="組學定量分析" data-en="Omics Quantification">組學定量分析</h3><p data-lang="zh">RNA-seq / Proteomics counts、TPM/FPKM、DESeq2 normalization、log2FC 與 PCA。</p><p data-lang="en">RNA-seq / proteomics counts, TPM/FPKM, DESeq2 normalization, log2FC and PCA workflows.</p></a>
+  <a href="visualization.html" class="hub-card"><div class="hub-emoji">🎨</div><span class="step-num">Advanced</span><h3 data-zh="資料視覺化與報告" data-en="Visualization &amp; Reporting">資料視覺化與報告</h3><p data-lang="zh">Box / violin / forest plot、heatmap、volcano、ggplot2 與 seaborn 的設計原則與避雷。</p><p data-lang="en">Box/violin/forest plots, heatmaps, volcanoes, ggplot2 and seaborn — design principles and pitfalls.</p></a>
+  <a href="reproducibility.html" class="hub-card"><div class="hub-emoji">📋</div><span class="step-num">Advanced</span><h3 data-zh="再現性與報告標準" data-en="Reproducibility &amp; Reporting">再現性與報告標準</h3><p data-lang="zh">MIQE、ARRIVE 2.0、CONSORT、FAIR 原則、preregistration 與 RMarkdown / Quarto 報告。</p><p data-lang="en">MIQE, ARRIVE 2.0, CONSORT, FAIR principles, preregistration, and RMarkdown / Quarto reports.</p></a>
+  <a href="ai-ml.html" class="hub-card"><div class="hub-emoji">🤖</div><span class="step-num">Advanced</span><h3 data-zh="AI / ML 量化分析" data-en="AI / ML for Quantification">AI / ML 量化分析</h3><p data-lang="zh">Regression / Classification、cross-validation、ROC/PR-AUC、SHAP 解釋性與外部驗證。</p><p data-lang="en">Regression / classification, cross-validation, ROC/PR-AUC, SHAP explainability, and external validation.</p></a>
+</div>
+
+<h2 class="hub-section-title"><span>04</span> <span data-zh="延伸學習" data-en="Further Learning">延伸學習</span></h2>
+<div class="hub-steps-grid">
+  <a href="references/index.html" class="hub-card"><div class="hub-emoji">📚</div><span class="step-num">References</span><h3 data-zh="參考資料佐證" data-en="References &amp; Citations">參考資料佐證</h3><p data-lang="zh">14 主題的權威文獻、報告規範（MIQE、ARRIVE、CONSORT）、官方手冊與教科書頁碼整理，附 DOI 連結。</p><p data-lang="en">Authoritative papers, reporting guidelines (MIQE, ARRIVE, CONSORT), official manuals, and textbook citations — with DOI links.</p></a>
+  <a href="qda-quiz/index.html" class="hub-card" target="_blank" rel="noopener"><div class="hub-emoji">📝</div><span class="step-num">Quiz</span><h3 data-zh="互動式考題" data-en="Interactive Quiz">互動式考題</h3><p data-lang="zh">涵蓋 14 主題的單選、多選、是非題，含錯題複習、隨機練習與多使用者進度追蹤。</p><p data-lang="en">Single-choice, multi-select, and true/false questions for all 14 topics, with wrong-answer review and progress tracking.</p></a>
+</div>
+<div style="height:60px"></div>
+<footer class="site-footer">© Charlene — Quantitative Data &amp; Analysis Interactive Tutorial</footer>
+<script src="i18n.js"></script>
+</body></html>

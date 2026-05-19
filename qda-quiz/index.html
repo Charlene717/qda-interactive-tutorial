@@ -1,0 +1,312 @@
+<!doctype html><html lang="zh-Hant"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QDA 互動考題 — Quantitative Data &amp; Analysis Quiz</title>
+<style>
+:root{
+  --bg:#f6f7fb;--card:#fff;--ink:#1a1a1a;--soft:#5a6b7b;--line:#dfe4ef;
+  --primary:#1F77B4;--primary-soft:#E1ECF5;--primary-dark:#0F3A57;
+  --accent:#FF7F0E;--accent-soft:#F5EAE0;
+  --green:#15803d;--green-soft:#dcfce7;
+  --red:#b91c1c;--red-soft:#fee2e2;
+  --yellow:#a16207;--yellow-soft:#fef3c7;
+  --grey:#f1f3f5;--grey-soft:#f8f9fa;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.04);
+  --radius:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI","PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:16px}
+header{background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 60%,#4f46e5 100%);color:#fff;padding:14px 22px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.h-row{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+h1{font-size:18px;margin:0;font-weight:700;display:flex;align-items:center;gap:8px}
+.homelink{color:#fff;text-decoration:none;font-size:13px;padding:5px 12px;border:1px solid rgba(255,255,255,.5);border-radius:999px;white-space:nowrap;background:transparent}
+.homelink:hover{background:rgba(255,255,255,.15)}
+.lang-toggle{margin-left:auto;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);padding:5px 14px;border-radius:999px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:700}
+.lang-toggle:hover{background:rgba(255,255,255,.35)}
+.stat{color:rgba(255,255,255,.95);font-size:13px}
+.stat strong{color:#fff;font-size:17px}
+main{max-width:1280px;margin:22px auto;padding:0 18px 40px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:18px}
+.panel h2{margin:0 0 6px;font-size:16px;font-weight:600}
+.panel .desc{color:var(--soft);font-size:13px;margin-bottom:14px}
+.global-prog{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--primary-soft);border:1px solid var(--primary);border-radius:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.global-prog .gp-label{color:var(--primary);font-weight:600;min-width:80px}
+.global-prog .gp-bar{flex:1;height:8px;background:#fff;border-radius:4px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line);min-width:140px}
+.global-prog .gp-fill{height:100%;background:var(--green);transition:width .3s;width:0%}
+.global-prog .gp-text{color:var(--ink);font-variant-numeric:tabular-nums}
+.global-prog .gp-reset{background:#fff;border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.ycard{background:var(--grey-soft);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.ytitle{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ytitle .ycount{color:var(--soft);font-weight:400;font-size:12px}
+.ystatus{font-size:12px;color:var(--soft)}
+.ystatus .badge-status{padding:2px 8px;border-radius:999px;font-weight:600;font-size:11px;background:var(--green-soft);color:var(--green)}
+.action-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid var(--primary);background:var(--primary-soft);color:var(--primary-dark);flex:1;min-width:80px;justify-content:center;transition:.12s}
+.chip:hover{background:var(--primary);color:#fff;transform:translateY(-1px)}
+.special-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.special-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--ink);cursor:pointer;font-family:inherit}
+.special-btn:hover{border-color:var(--primary);color:var(--primary)}
+.special-btn.wrong{border-color:var(--red);color:var(--red)}
+.special-btn.wrong:hover{background:var(--red-soft)}
+/* Quiz screen */
+.quiz-screen{display:none}
+.quiz-screen.active{display:block}
+.q-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.q-topic{font-weight:700;color:var(--primary)}
+.q-counter{font-size:13px;color:var(--soft)}
+.q-text{font-size:17px;font-weight:600;margin:14px 0 18px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border:1.5px solid var(--line);border-radius:8px;cursor:pointer;font-size:15px;transition:.15s}
+.opt:hover{border-color:var(--primary);background:var(--primary-soft)}
+.opt.selected{border-color:var(--primary);background:var(--primary-soft)}
+.opt.correct{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+.opt.wrong{border-color:var(--red);background:var(--red-soft);color:var(--red)}
+.opt .opt-mark{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;background:#fff}
+.opt.selected .opt-mark{border-color:var(--primary);background:var(--primary);color:#fff}
+.opt.correct .opt-mark{border-color:var(--green);background:var(--green);color:#fff}
+.opt.wrong .opt-mark{border-color:var(--red);background:var(--red);color:#fff}
+.q-feedback{margin-top:14px;padding:12px 16px;border-radius:8px;font-size:14px;display:none}
+.q-feedback.show{display:block}
+.q-feedback.correct{background:var(--green-soft);color:var(--green);border:1px solid var(--green)}
+.q-feedback.wrong{background:var(--red-soft);color:var(--red);border:1px solid var(--red)}
+.q-actions{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px;flex-wrap:wrap}
+.btn{padding:9px 22px;border-radius:8px;border:none;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.primary:hover{background:var(--primary-dark)}
+.btn.secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn.secondary:hover{border-color:var(--primary);color:var(--primary)}
+/* End screen */
+.end-screen{text-align:center;padding:32px}
+.end-screen h2{font-size:24px;margin-bottom:8px}
+.end-screen .score{font-size:48px;font-weight:700;color:var(--primary);margin:18px 0}
+.end-screen .desc{color:var(--soft);margin-bottom:24px}
+.legend{font-size:12px;color:var(--soft);margin-top:14px;display:flex;gap:14px;flex-wrap:wrap}
+@media(max-width:600px){.cards{grid-template-columns:1fr}}
+</style>
+</head><body>
+
+<header>
+<div class="h-row">
+<h1 data-zh="📊 量化數據分析 互動式考題" data-en="📊 Quantitative Data Analysis Interactive Quiz">📊 量化數據分析 互動式考題</h1>
+<a href="../index.html" class="homelink" data-zh="← 回教程主頁" data-en="← Tutorial Hub">← 回教程主頁</a>
+<button class="lang-toggle" id="langToggle">EN</button>
+<span class="stat" id="globalStat">— <span data-zh="題完成" data-en="answered">題完成</span></span>
+</div>
+</header>
+
+<main>
+<div id="hubScreen">
+<div class="panel">
+<h2 data-zh="總進度" data-en="Overall Progress">總進度</h2>
+<div class="global-prog">
+<span class="gp-label" data-zh="全部" data-en="Total">全部</span>
+<div class="gp-bar"><div class="gp-fill" id="gpFill"></div></div>
+<span class="gp-text" id="gpText">0 / 0</span>
+<button class="gp-reset" id="resetBtn" data-zh="重置進度" data-en="Reset progress">重置進度</button>
+</div>
+<div class="special-row">
+<button class="special-btn" id="practiceAll" data-zh="🎲 練習全部 (隨機)" data-en="🎲 Practice all (random)">🎲 練習全部 (隨機)</button>
+<button class="special-btn wrong" id="reviewWrong" data-zh="📌 錯題複習" data-en="📌 Review wrong">📌 錯題複習</button>
+</div>
+</div>
+
+<div class="panel">
+<h2 data-zh="主題分類" data-en="Topics">主題分類</h2>
+<div class="desc" data-zh="選擇章節：單選 / 多選 / 是非題，含完整解析。" data-en="Pick a topic — single-choice, multi-select, true/false with full explanations.">選擇章節：單選 / 多選 / 是非題，含完整解析。</div>
+<div class="cards" id="topicCards"></div>
+<div class="legend">
+<span><span class="badge-status">10/10</span> = <span data-zh="完成" data-en="complete">完成</span></span>
+<span data-zh="進度與錯題自動儲存於本機 (localStorage)" data-en="Progress and wrong-answer log auto-saved in localStorage">進度自動儲存</span>
+</div>
+</div>
+</div>
+
+<div id="quizScreen" class="quiz-screen">
+<div class="panel">
+<div class="q-header">
+<span class="q-topic" id="qTopic">—</span>
+<span class="q-counter" id="qCounter">1 / 1</span>
+<button class="btn secondary" id="backBtn" data-zh="← 返回" data-en="← Back">← 返回</button>
+</div>
+<div class="q-text" id="qText"></div>
+<div class="opts" id="qOpts"></div>
+<div class="q-feedback" id="qFeedback"></div>
+<div class="q-actions">
+<button class="btn secondary" id="prevBtn" data-zh="上一題" data-en="Previous">上一題</button>
+<button class="btn primary" id="submitBtn" data-zh="提交答案" data-en="Submit">提交答案</button>
+<button class="btn primary" id="nextBtn" data-zh="下一題 →" data-en="Next →" style="display:none">下一題 →</button>
+</div>
+</div>
+</div>
+
+<div id="endScreen" class="quiz-screen">
+<div class="panel end-screen">
+<h2 data-zh="完成！" data-en="Completed!">完成！</h2>
+<div class="score" id="endScore">0 / 0</div>
+<div class="desc" id="endDesc"></div>
+<button class="btn primary" id="endBack" data-zh="返回主頁" data-en="Back to hub">返回主頁</button>
+</div>
+</div>
+</main>
+
+<script src="data.js"></script>
+<script>
+const SK='qda_quiz_state';
+let state = JSON.parse(localStorage.getItem(SK) || '{"lang":"zh","answered":{},"wrong":[]}');
+let lang = state.lang || 'en';
+let currentSet = [];     // array of question objects in current quiz session
+let currentIdx = 0;
+let selected = [];       // current selection (array of indices for multi-select)
+
+function save(){ state.lang=lang; localStorage.setItem(SK, JSON.stringify(state)); }
+function applyLang(l){
+  lang=l; save();
+  document.documentElement.lang = l==='zh'?'zh-Hant':'en';
+  document.getElementById('langToggle').textContent = l==='zh'?'EN':'中文';
+  document.querySelectorAll('[data-zh][data-en]').forEach(el=>el.textContent=el.dataset[l]);
+  renderHub();
+  if(currentSet.length) renderQuestion();
+}
+document.getElementById('langToggle').onclick = ()=>applyLang(lang==='zh'?'en':'zh');
+
+function renderHub(){
+  document.getElementById('hubScreen').style.display='';
+  document.getElementById('quizScreen').classList.remove('active');
+  document.getElementById('endScreen').classList.remove('active');
+  // Cards
+  const wrap = document.getElementById('topicCards');
+  wrap.innerHTML='';
+  QDA_QUIZ.topics.forEach(t=>{
+    const qs = QDA_QUIZ.questions.filter(q=>q.topic===t.id);
+    const done = qs.filter(q=>state.answered[q.id]).length;
+    const card = document.createElement('div');
+    card.className='ycard';
+    card.innerHTML = `
+      <div class="ytitle">${t['name_'+lang]} <span class="ycount">(${qs.length} ${lang==='zh'?'題':'qs'})</span></div>
+      <div class="ystatus">${done}/${qs.length} ${done===qs.length?'<span class="badge-status">'+(lang==='zh'?'完成':'done')+'</span>':''}</div>
+      <div class="action-row">
+        <button class="chip" data-topic="${t.id}" data-mode="practice">${lang==='zh'?'▶ 開始':'▶ Start'}</button>
+        <button class="chip" data-topic="${t.id}" data-mode="random">${lang==='zh'?'🎲 隨機':'🎲 Shuffle'}</button>
+      </div>`;
+    wrap.appendChild(card);
+  });
+  wrap.querySelectorAll('.chip').forEach(b=>b.onclick=()=>startQuiz(b.dataset.topic, b.dataset.mode));
+  // Global
+  const total = QDA_QUIZ.questions.length;
+  const done = Object.keys(state.answered).length;
+  document.getElementById('gpFill').style.width = (done/total*100).toFixed(1)+'%';
+  document.getElementById('gpText').textContent = `${done} / ${total}`;
+  document.getElementById('globalStat').innerHTML = `<strong>${done}</strong> / ${total} <span data-${lang}="${lang==='zh'?'題完成':'answered'}">${lang==='zh'?'題完成':'answered'}</span>`;
+}
+
+function startQuiz(topicId, mode){
+  if(topicId==='__all__'){currentSet = [...QDA_QUIZ.questions];}
+  else if(topicId==='__wrong__'){
+    currentSet = QDA_QUIZ.questions.filter(q=>state.wrong.includes(q.id));
+    if(currentSet.length===0){alert(lang==='zh'?'目前沒有錯題！':'No wrong answers yet!');return;}
+  }
+  else currentSet = QDA_QUIZ.questions.filter(q=>q.topic===topicId);
+  if(mode==='random' || topicId==='__all__') currentSet.sort(()=>Math.random()-0.5);
+  currentIdx = 0;
+  document.getElementById('hubScreen').style.display='none';
+  document.getElementById('quizScreen').classList.add('active');
+  document.getElementById('endScreen').classList.remove('active');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = currentSet[currentIdx];
+  selected = [];
+  const topic = QDA_QUIZ.topics.find(t=>t.id===q.topic);
+  document.getElementById('qTopic').textContent = topic['name_'+lang];
+  document.getElementById('qCounter').textContent = `${currentIdx+1} / ${currentSet.length}`;
+  document.getElementById('qText').textContent = q['q_'+lang] + (q.type==='multi'?' '+(lang==='zh'?'（複選）':'(multi-select)'):'');
+  const optsWrap = document.getElementById('qOpts');
+  optsWrap.innerHTML='';
+  const letters = ['A','B','C','D','E','F'];
+  q.opts.forEach((o,i)=>{
+    const div = document.createElement('div');
+    div.className='opt';
+    div.dataset.idx = i;
+    div.innerHTML = `<div class="opt-mark">${letters[i]}</div><div>${o[lang]}</div>`;
+    div.onclick = ()=>{
+      if(div.closest('.opt').classList.contains('locked')) return;
+      if(q.type==='multi'){
+        if(selected.includes(i)){selected = selected.filter(x=>x!==i); div.classList.remove('selected');}
+        else {selected.push(i); div.classList.add('selected');}
+      } else {
+        optsWrap.querySelectorAll('.opt').forEach(x=>x.classList.remove('selected'));
+        selected = [i]; div.classList.add('selected');
+      }
+    };
+    optsWrap.appendChild(div);
+  });
+  document.getElementById('qFeedback').className='q-feedback';
+  document.getElementById('qFeedback').textContent='';
+  document.getElementById('submitBtn').style.display='';
+  document.getElementById('nextBtn').style.display='none';
+  document.getElementById('prevBtn').style.display = currentIdx>0?'':'none';
+}
+
+document.getElementById('submitBtn').onclick = ()=>{
+  if(selected.length===0){alert(lang==='zh'?'請先選擇答案':'Please select an answer');return;}
+  const q = currentSet[currentIdx];
+  let correct = q.correct;
+  if(!Array.isArray(correct)) correct = [correct];
+  selected.sort(); correct = [...correct].sort();
+  const ok = selected.length===correct.length && selected.every((v,i)=>v===correct[i]);
+  // Mark options
+  document.querySelectorAll('.opt').forEach((el,i)=>{
+    el.classList.add('locked');
+    el.style.pointerEvents='none';
+    if(correct.includes(i)) el.classList.add('correct');
+    else if(selected.includes(i)) el.classList.add('wrong');
+  });
+  // Feedback
+  const fb = document.getElementById('qFeedback');
+  fb.className = 'q-feedback show '+(ok?'correct':'wrong');
+  fb.innerHTML = (ok?(lang==='zh'?'✓ 正確！':'✓ Correct!')+'<br>':'')
+    + (lang==='zh'?'<strong>解析：</strong>':'<strong>Explanation:</strong> ')
+    + q['exp_'+lang];
+  // Save
+  state.answered[q.id] = ok;
+  if(ok) state.wrong = state.wrong.filter(id=>id!==q.id);
+  else if(!state.wrong.includes(q.id)) state.wrong.push(q.id);
+  save();
+  document.getElementById('submitBtn').style.display='none';
+  document.getElementById('nextBtn').style.display='';
+};
+document.getElementById('nextBtn').onclick = ()=>{
+  if(currentIdx < currentSet.length-1){currentIdx++; renderQuestion();}
+  else {showEnd();}
+};
+document.getElementById('prevBtn').onclick = ()=>{
+  if(currentIdx>0){currentIdx--; renderQuestion();}
+};
+document.getElementById('backBtn').onclick = ()=>{currentSet=[]; renderHub();};
+document.getElementById('endBack').onclick = ()=>{currentSet=[]; renderHub();};
+
+function showEnd(){
+  document.getElementById('quizScreen').classList.remove('active');
+  document.getElementById('endScreen').classList.add('active');
+  const correctCnt = currentSet.filter(q=>state.answered[q.id]===true).length;
+  document.getElementById('endScore').textContent = `${correctCnt} / ${currentSet.length}`;
+  const pct = (correctCnt/currentSet.length*100).toFixed(0);
+  document.getElementById('endDesc').textContent = lang==='zh' ?
+    `正確率 ${pct}%。${pct>=80?'表現優秀！':pct>=60?'再多複習錯題':'建議回章節重新閱讀'}` :
+    `Accuracy ${pct}%. ${pct>=80?'Excellent!':pct>=60?'Review wrong answers':'Re-read the chapter'}`;
+}
+
+document.getElementById('practiceAll').onclick = ()=>startQuiz('__all__','random');
+document.getElementById('reviewWrong').onclick = ()=>startQuiz('__wrong__','practice');
+document.getElementById('resetBtn').onclick = ()=>{
+  if(confirm(lang==='zh'?'確定要清空所有進度？':'Reset all progress?')){
+    state = {lang, answered:{}, wrong:[]}; save(); renderHub();
+  }
+};
+
+applyLang(lang);
+renderHub();
+</script>
+</body></html>
